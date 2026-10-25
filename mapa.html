@@ -35,6 +35,7 @@ html,body{height:100%;font-family:var(--font-body);-webkit-font-smoothing:antial
 .chip-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
 .report-list{flex:1;overflow-y:auto;padding:.5rem 0}
 .empty-state{padding:2.5rem 1.5rem;text-align:center;display:flex;flex-direction:column;align-items:center;gap:.4rem}
+.empty-state[hidden]{display:none}
 .empty-icon{font-size:2rem}
 .empty-state p{font-family:var(--font-ui);font-size:.88rem;font-weight:600;color:var(--ink)}
 .empty-state span{font-size:.8rem;color:var(--muted)}
@@ -85,8 +86,7 @@ html,body{height:100%;font-family:var(--font-body);-webkit-font-smoothing:antial
 .type-btn{display:flex;flex-direction:column;align-items:center;gap:.4rem;padding:.85rem .5rem;background:var(--sand);border:1.5px solid transparent;border-radius:var(--radius-md);cursor:pointer;transition:all .12s}
 .type-btn:hover{border-color:var(--navy)}
 .type-btn.is-selected{background:rgba(27,58,75,.06);border-color:var(--navy)}
-.type-icon{font-size:1.4rem}
-.type-btn span:last-child{font-family:var(--font-ui);font-size:.75rem;font-weight:500;color:var(--ink)}
+.type-btn span{font-family:var(--font-ui);font-size:.75rem;font-weight:500;color:var(--ink)}
 .modal-field{display:flex;flex-direction:column;gap:.4rem}
 .modal-field label{font-family:var(--font-ui);font-size:.82rem;font-weight:600;color:var(--ink)}
 .modal-field textarea{font-family:var(--font-body);font-size:.88rem;color:var(--ink);background:var(--white);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:.65rem .85rem;resize:vertical;min-height:80px;outline:none;transition:border-color .15s}
@@ -183,11 +183,11 @@ html,body{height:100%;font-family:var(--font-body);-webkit-font-smoothing:antial
           Necesitas una cuenta para publicar reportes. <a href="index.html">Inicia sesión</a>
         </div>
         <div class="type-grid">
-          <button class="type-btn" data-type="fire"><span class="type-icon">🔥</span><span>Incendio</span></button>
-          <button class="type-btn" data-type="landslide"><span class="type-icon">⛰️</span><span>Deslave</span></button>
-          <button class="type-btn" data-type="flood"><span class="type-icon">🌊</span><span>Inundación</span></button>
-          <button class="type-btn" data-type="accident"><span class="type-icon">🚨</span><span>Accidente</span></button>
-          <button class="type-btn" data-type="other"><span class="type-icon">⚠️</span><span>Otro</span></button>
+          <button class="type-btn" data-type="fire"><span>Incendio</span></button>
+          <button class="type-btn" data-type="landslide"><span>Deslave</span></button>
+          <button class="type-btn" data-type="flood"><span>Inundación</span></button>
+          <button class="type-btn" data-type="accident"><span>Accidente</span></button>
+          <button class="type-btn" data-type="other"><span>Otro</span></button>
         </div>
         <div class="modal-field" id="descField" hidden>
           <label for="reportDesc">Descripción breve</label>
@@ -208,14 +208,14 @@ html,body{height:100%;font-family:var(--font-body);-webkit-font-smoothing:antial
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
   <script>
-const DEMO=[{id:1,type:'fire',label:'Incendio',emoji:'🔥',color:'#E84855',title:'Incendio en Colonia Obrera',desc:'Humo visible desde varias cuadras, posible incendio en bodega.',lat:19.5438,lng:-96.9172,time:'Hace 12 min'},{id:2,type:'landslide',label:'Deslave',emoji:'⛰️',color:'#F2A65A',title:'Deslave en carretera Xalapa-Coatepec',desc:'Tramo bloqueado, se recomienda tomar ruta alterna.',lat:19.4780,lng:-96.9440,time:'Hace 35 min'},{id:3,type:'flood',label:'Inundación',emoji:'🌊',color:'#3BB6D8',title:'Calle inundada en Las Ánimas',desc:'Agua llegando hasta la banqueta, evitar el área.',lat:19.5590,lng:-96.9355,time:'Hace 1 hr'}];
+const DEMO=[{id:1,type:'fire',label:'Incendio',color:'#E84855',title:'Incendio en Colonia Obrera',desc:'Humo visible desde varias cuadras, posible incendio en bodega.',lat:19.5438,lng:-96.9172,time:'Hace 12 min'},{id:2,type:'landslide',label:'Deslave',color:'#F2A65A',title:'Deslave en carretera Xalapa-Coatepec',desc:'Tramo bloqueado, se recomienda tomar ruta alterna.',lat:19.4780,lng:-96.9440,time:'Hace 35 min'},{id:3,type:'flood',label:'Inundación',color:'#3BB6D8',title:'Calle inundada en Las Ánimas',desc:'Agua llegando hasta la banqueta, evitar el área.',lat:19.5590,lng:-96.9355,time:'Hace 1 hr'}];
 let activeFilter='all',selectedId=null,isGuest=true,markers={};
 const map=L.map('map',{center:[19.543,-96.927],zoom:13});
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',maxZoom:19}).addTo(map);
-function mkIcon(r){return L.divIcon({className:'',html:`<div style="width:32px;height:32px;background:${r.color};border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:2.5px solid rgba(255,255,255,.9);box-shadow:0 2px 8px rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center;"><span style="transform:rotate(45deg);font-size:14px;line-height:1">${r.emoji}</span></div>`,iconSize:[32,32],iconAnchor:[16,32],popupAnchor:[0,-34]})}
+function mkIcon(r){return L.divIcon({className:'',html:`<div style="width:32px;height:32px;background:${r.color};border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:2.5px solid rgba(255,255,255,.9);box-shadow:0 2px 8px rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center;"><span style="width:10px;height:10px;background:#fff;border-radius:50%;display:block"></span></div>`,iconSize:[32,32],iconAnchor:[16,32],popupAnchor:[0,-34]})}
 function mkPopup(r){return`<div class="incident-popup"><div class="popup-type" style="color:${r.color}">${r.label}</div><div class="popup-title">${r.title}</div><div class="popup-desc">${r.desc}</div><div class="popup-time">${r.time}</div></div>`}
 function renderMarkers(){Object.values(markers).forEach(m=>map.removeLayer(m));markers={};DEMO.filter(r=>activeFilter==='all'||r.type===activeFilter).forEach(r=>{const m=L.marker([r.lat,r.lng],{icon:mkIcon(r)}).bindPopup(mkPopup(r),{maxWidth:260}).addTo(map);m.on('click',()=>selectReport(r.id));markers[r.id]=m})}
-function renderList(){const list=document.getElementById('reportList'),empty=document.getElementById('emptyState'),cnt=document.getElementById('activeCount'),filtered=DEMO.filter(r=>activeFilter==='all'||r.type===activeFilter);cnt.textContent=filtered.length;list.querySelectorAll('.report-card').forEach(e=>e.remove());if(!filtered.length){empty.hidden=false;showToast('Sin reportes en este filtro');return}empty.hidden=true;hideToast();filtered.forEach(r=>{const c=document.createElement('div');c.className='report-card';c.dataset.id=r.id;c.innerHTML=`<div class="report-type-dot" style="background:${r.color}"></div><div class="report-card-body"><div class="report-card-title">${r.title}</div><div class="report-card-desc">${r.desc}</div><div class="report-card-meta">${r.emoji} ${r.label} &middot; ${r.time}</div></div>`;c.addEventListener('click',()=>selectReport(r.id));list.appendChild(c)})}
+function renderList(){const list=document.getElementById('reportList'),empty=document.getElementById('emptyState'),cnt=document.getElementById('activeCount'),filtered=DEMO.filter(r=>activeFilter==='all'||r.type===activeFilter);cnt.textContent=filtered.length;list.querySelectorAll('.report-card').forEach(e=>e.remove());if(!filtered.length){empty.hidden=false;showToast('Sin reportes en este filtro');return}empty.hidden=true;hideToast();filtered.forEach(r=>{const c=document.createElement('div');c.className='report-card';c.dataset.id=r.id;c.innerHTML=`<div class="report-type-dot" style="background:${r.color}"></div><div class="report-card-body"><div class="report-card-title">${r.title}</div><div class="report-card-desc">${r.desc}</div><div class="report-card-meta">${r.label} &middot; ${r.time}</div></div>`;c.addEventListener('click',()=>selectReport(r.id));list.appendChild(c)})}
 function selectReport(id){selectedId=id;document.querySelectorAll('.report-card').forEach(e=>e.classList.toggle('is-selected',parseInt(e.dataset.id)===id));const m=markers[id],r=DEMO.find(x=>x.id===id);if(m&&r){map.setView([r.lat,r.lng],15,{animate:true});m.openPopup()}}
 document.querySelectorAll('.filter-chip').forEach(c=>c.addEventListener('click',()=>{document.querySelectorAll('.filter-chip').forEach(x=>x.classList.remove('filter-chip--active'));c.classList.add('filter-chip--active');activeFilter=c.dataset.filter;renderMarkers();renderList()}));
 document.getElementById('locateMe').addEventListener('click',()=>{if(!navigator.geolocation)return showToast('Sin soporte de geolocalización');navigator.geolocation.getCurrentPosition(p=>map.setView([p.coords.latitude,p.coords.longitude],15,{animate:true}),()=>showToast('No se pudo obtener tu ubicación'))});
@@ -232,7 +232,7 @@ modalClose.addEventListener('click',closeModal);cancelBtn.addEventListener('clic
 overlay.addEventListener('click',e=>{if(e.target===overlay)closeModal()});
 document.querySelectorAll('.type-btn').forEach(b=>b.addEventListener('click',()=>{if(isGuest)return;document.querySelectorAll('.type-btn').forEach(x=>x.classList.remove('is-selected'));b.classList.add('is-selected');selType=b.dataset.type;descField.hidden=false;locField.hidden=false;modalFooter.hidden=false}));
 document.getElementById('useMyLoc').addEventListener('click',()=>{if(!navigator.geolocation)return;navigator.geolocation.getCurrentPosition(p=>{rLat=p.coords.latitude;rLng=p.coords.longitude;document.getElementById('locText').textContent=`${rLat.toFixed(5)}, ${rLng.toFixed(5)}`})});
-submitBtn.addEventListener('click',()=>{const desc=document.getElementById('reportDesc').value.trim();if(!selType){alert('Selecciona un tipo.');return}if(!desc){alert('Agrega una descripción.');return}const tm={fire:{label:'Incendio',emoji:'🔥',color:'#E84855'},landslide:{label:'Deslave',emoji:'⛰️',color:'#F2A65A'},flood:{label:'Inundación',emoji:'🌊',color:'#3BB6D8'},accident:{label:'Accidente',emoji:'🚨',color:'#6B8F71'},other:{label:'Otro',emoji:'⚠️',color:'#697A84'}};const t=tm[selType],c=map.getCenter(),nr={id:Date.now(),type:selType,...t,title:`${t.label} reportado`,desc,lat:rLat||c.lat,lng:rLng||c.lng,time:'Ahora'};DEMO.unshift(nr);renderMarkers();renderList();closeModal();selectReport(nr.id);showToast('Reporte publicado');setTimeout(hideToast,3000)});
+submitBtn.addEventListener('click',()=>{const desc=document.getElementById('reportDesc').value.trim();if(!selType){alert('Selecciona un tipo.');return}if(!desc){alert('Agrega una descripción.');return}const tm={fire:{label:'Incendio',color:'#E84855'},landslide:{label:'Deslave',color:'#F2A65A'},flood:{label:'Inundación',color:'#3BB6D8'},accident:{label:'Accidente',color:'#6B8F71'},other:{label:'Otro',color:'#697A84'}};const t=tm[selType],c=map.getCenter(),nr={id:Date.now(),type:selType,...t,title:`${t.label} reportado`,desc,lat:rLat||c.lat,lng:rLng||c.lng,time:'Ahora'};DEMO.unshift(nr);renderMarkers();renderList();closeModal();selectReport(nr.id);showToast('Reporte publicado');setTimeout(hideToast,3000)});
 renderMarkers();renderList();
   </script>
 </body>

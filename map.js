@@ -1,15 +1,9 @@
-/* =============================================
-   SafeMap — map.js
-   Mapa Leaflet + lógica de reportes (Fase 1)
-   ============================================= */
-
-// ── Datos de demo ──
+//Datos de prueba//
 const DEMO_REPORTS = [
   {
     id: 1,
     type: 'fire',
     label: 'Incendio',
-    emoji: '🔥',
     color: '#E84855',
     title: 'Incendio en Colonia Obrera',
     desc: 'Humo visible desde varias cuadras, posible incendio en bodega.',
@@ -21,19 +15,17 @@ const DEMO_REPORTS = [
     id: 2,
     type: 'landslide',
     label: 'Deslave',
-    emoji: '⛰️',
     color: '#F2A65A',
     title: 'Deslave en carretera Xalapa-Coatepec',
     desc: 'Tramo bloqueado, se recomienda tomar ruta alterna.',
-    lat: 19.4780,
-    lng: -96.9440,
+    lat: 19.5540,
+    lng: -96.9360,
     time: 'Hace 35 min',
   },
   {
     id: 3,
     type: 'flood',
     label: 'Inundación',
-    emoji: '🌊',
     color: '#3BB6D8',
     title: 'Calle inundada en Las Ánimas',
     desc: 'Agua llegando hasta la banqueta, evitar el área.',
@@ -43,13 +35,11 @@ const DEMO_REPORTS = [
   },
 ];
 
-// ── Estado ──
 let activeFilter = 'all';
 let selectedReportId = null;
 let isGuest = true; // cambiar a false cuando haya sesión real
 let markers = {};
 
-// ── Inicializar mapa (Xalapa) ──
 const map = L.map('map', {
   center: [19.543, -96.927],
   zoom: 13,
@@ -61,7 +51,6 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   maxZoom: 19,
 }).addTo(map);
 
-// ── Marcadores custom ──
 function createMarkerIcon(report) {
   return L.divIcon({
     className: '',
@@ -84,7 +73,6 @@ function createMarkerIcon(report) {
   });
 }
 
-// ── Construir popup ──
 function buildPopup(r) {
   return `
     <div class="incident-popup">
@@ -96,9 +84,7 @@ function buildPopup(r) {
   `;
 }
 
-// ── Renderizar marcadores ──
 function renderMarkers() {
-  // Limpiar previos
   Object.values(markers).forEach(m => map.removeLayer(m));
   markers = {};
 
@@ -116,7 +102,6 @@ function renderMarkers() {
   });
 }
 
-// ── Renderizar lista ──
 function renderList() {
   const list = document.getElementById('reportList');
   const empty = document.getElementById('emptyState');
@@ -128,7 +113,6 @@ function renderList() {
 
   countEl.textContent = filtered.length;
 
-  // Limpiar tarjetas previas
   list.querySelectorAll('.report-card').forEach(el => el.remove());
 
   if (filtered.length === 0) {
@@ -157,16 +141,15 @@ function renderList() {
   });
 }
 
-// ── Seleccionar reporte ──
+//Seleccionar reporte// 
 function selectReport(id) {
   selectedReportId = id;
 
-  // Actualizar tarjetas
   document.querySelectorAll('.report-card').forEach(el => {
     el.classList.toggle('is-selected', parseInt(el.dataset.id) === id);
   });
 
-  // Mostrar popup en mapa
+  // Mostrar mapa //
   const marker = markers[id];
   const report = DEMO_REPORTS.find(r => r.id === id);
   if (marker && report) {
@@ -175,7 +158,6 @@ function selectReport(id) {
   }
 }
 
-// ── Filtros ──
 document.querySelectorAll('.filter-chip').forEach(chip => {
   chip.addEventListener('click', () => {
     document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('filter-chip--active'));
@@ -186,7 +168,7 @@ document.querySelectorAll('.filter-chip').forEach(chip => {
   });
 });
 
-// ── Ubicarme ──
+//Ubicacion exacta//
 document.getElementById('locateMe').addEventListener('click', () => {
   if (!navigator.geolocation) {
     showToast('Tu navegador no soporta geolocalización');
@@ -200,7 +182,7 @@ document.getElementById('locateMe').addEventListener('click', () => {
   );
 });
 
-// ── Toast ──
+
 function showToast(msg) {
   const toast = document.getElementById('mapToast');
   document.getElementById('toastMsg').textContent = msg;
@@ -211,7 +193,6 @@ function hideToast() {
   document.getElementById('mapToast').hidden = true;
 }
 
-// ── Sidebar mobile ──
 const sidebar = document.getElementById('sidebar');
 const sidebarToggle = document.getElementById('sidebarToggle');
 
@@ -219,14 +200,12 @@ sidebarToggle.addEventListener('click', () => {
   sidebar.classList.toggle('is-open');
 });
 
-// Cerrar sidebar al click en el mapa (mobile)
 map.on('click', () => {
   if (window.innerWidth <= 768) {
     sidebar.classList.remove('is-open');
   }
 });
 
-// ── Modal de reporte ──
 const overlay  = document.getElementById('modalOverlay');
 const modalClose = document.getElementById('modalClose');
 const cancelBtn  = document.getElementById('cancelReport');
@@ -263,7 +242,6 @@ overlay.addEventListener('click', e => {
   if (e.target === overlay) closeModal();
 });
 
-// Selección de tipo
 document.querySelectorAll('.type-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     if (isGuest) return; // invitados no pueden reportar
@@ -276,7 +254,7 @@ document.querySelectorAll('.type-btn').forEach(btn => {
   });
 });
 
-// Usar mi ubicación
+// Usar mi ubicación//
 document.getElementById('useMyLoc').addEventListener('click', () => {
   if (!navigator.geolocation) return;
   navigator.geolocation.getCurrentPosition(pos => {
@@ -287,19 +265,18 @@ document.getElementById('useMyLoc').addEventListener('click', () => {
   });
 });
 
-// Publicar reporte (demo)
+// Publicar reporte//
 submitBtn.addEventListener('click', () => {
   const desc = document.getElementById('reportDesc').value.trim();
   if (!selectedType) { alert('Selecciona un tipo de incidente.'); return; }
   if (!desc) { alert('Agrega una descripción.'); return; }
 
-  // Demo: agregar marcador localmente
   const typeMap = {
-    fire:      { label:'Incendio',    emoji:'🔥', color:'#E84855' },
-    landslide: { label:'Deslave',     emoji:'⛰️', color:'#F2A65A' },
-    flood:     { label:'Inundación',  emoji:'🌊', color:'#3BB6D8' },
-    accident:  { label:'Accidente',   emoji:'🚨', color:'#6B8F71' },
-    other:     { label:'Otro',        emoji:'⚠️', color:'#697A84' },
+    fire:      { label:'Incendio',color:'#c90f1e' },
+    landslide: { label:'Deslave', color:'#76481a' },
+    flood:     { label:'Inundación', color:'#100493' },
+    accident:  { label:'Accidente',color:'#0c711c' },
+    other:     { label:'Otro',color:'#02f2f2' },
   };
 
   const t = typeMap[selectedType];
@@ -324,6 +301,5 @@ submitBtn.addEventListener('click', () => {
   setTimeout(hideToast, 3000);
 });
 
-// ── Init ──
 renderMarkers();
 renderList();

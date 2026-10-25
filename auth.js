@@ -1,8 +1,4 @@
-/* =============================================
-   SafeMap — auth.js
-   Validación del formulario de login
-   ============================================= */
-
+//login //
 const form       = document.getElementById('loginForm');
 const emailInput = document.getElementById('email');
 const passInput  = document.getElementById('password');
@@ -15,7 +11,7 @@ const togglePass = document.getElementById('togglePass');
 const eyeIcon    = document.getElementById('eyeIcon');
 const googleBtn  = document.getElementById('googleBtn');
 
-// ── Mostrar/ocultar contraseña ──
+//Mostrar-ocultar contraseña//
 togglePass.addEventListener('click', () => {
   const isHidden = passInput.type === 'password';
   passInput.type = isHidden ? 'text' : 'password';
@@ -26,7 +22,7 @@ togglePass.addEventListener('click', () => {
     : `<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>`;
 });
 
-// ── Validación en tiempo real ──
+//Validación en tiempo real//
 emailInput.addEventListener('blur', validateEmail);
 passInput.addEventListener('blur', validatePass);
 
@@ -77,7 +73,7 @@ function clearError(input, errorEl) {
   errorEl.textContent = '';
 }
 
-// ── Submit ──
+
 form.addEventListener('submit', async (e) => {
   e.preventDefault();
   const emailOk = validateEmail();
@@ -86,20 +82,17 @@ form.addEventListener('submit', async (e) => {
 
   setLoading(true);
 
-  // Simulación de login — aquí irá la llamada al backend PHP/API
+  // Simulación de login 
   await sleep(1400);
 
-  // Demo: redirigir al mapa
   window.location.href = 'map.html';
 });
 
-// ── Google ──
+//Secion google//
 googleBtn.addEventListener('click', () => {
-  // Placeholder para OAuth con Google
   alert('Integración con Google próximamente.');
 });
 
-// ── Helpers ──
 function setLoading(on) {
   submitBtn.disabled = on;
   btnText.hidden = on;

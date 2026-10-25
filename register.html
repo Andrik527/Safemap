@@ -1,141 +1,229 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SafeMap — Crear cuenta</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="css/auth.css" />
-  <style>
-    .auth-form .field-group + .field-group { margin-top: 0; }
-  </style>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SafeMap — Crear cuenta</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:'DM Sans',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+:root{
+  --night:#0D1B2A;--night2:#112236;--night3:#1A3350;
+  --red:#FF3B30;--green:#1EBF72;--amber:#F5A623;--sky:#8EA9BD;
+  --white:#FFFFFF;--white80:rgba(255,255,255,.8);--white50:rgba(255,255,255,.5);
+  --white20:rgba(255,255,255,.2);--white10:rgba(255,255,255,.10);--white06:rgba(255,255,255,.06);
+}
+body{background:var(--night);color:var(--white);min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden}
+
+/* Fondo */
+.bg{position:absolute;inset:0;z-index:0;
+  background:radial-gradient(ellipse 50% 60% at 80% 30%,rgba(30,191,114,.05) 0%,transparent 70%),
+  radial-gradient(ellipse 40% 50% at 15% 70%,rgba(59,155,255,.04) 0%,transparent 60%),var(--night)}
+.grid{position:absolute;inset:0;z-index:0;opacity:.03;
+  background-image:linear-gradient(90deg,var(--sky) 1px,transparent 1px),linear-gradient(0deg,var(--sky) 1px,transparent 1px);
+  background-size:80px 80px;transform:rotate(-8deg) scale(1.3)}
+
+/* Punto verde animado */
+.pd{position:absolute;width:7px;height:7px;border-radius:50%;background:var(--green);top:35%;left:72%;
+  box-shadow:0 0 0 0 rgba(30,191,114,.5);animation:pulse 2.8s ease-out infinite 0.5s}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(30,191,114,.5)}70%{box-shadow:0 0 0 16px transparent}100%{box-shadow:0 0 0 0 transparent}}
+
+/* Contenido */
+.page{position:relative;z-index:1;width:100%;max-width:420px;padding:2rem 1.5rem 2.5rem;display:flex;flex-direction:column}
+
+/* Brand */
+.brand{display:flex;align-items:center;gap:.6rem;margin-bottom:2.2rem}
+.brand-icon{width:34px;height:34px;background:var(--red);border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.brand-name{font-size:.95rem;font-weight:600;letter-spacing:-.01em;color:var(--white)}
+.brand-sep{width:1px;height:14px;background:var(--white10);margin:0 .3rem}
+.brand-loc{font-size:.75rem;font-weight:400;color:var(--sky)}
+
+/* Encabezado */
+.head{margin-bottom:1.8rem}
+.head h1{font-size:1.9rem;font-weight:300;letter-spacing:-.03em;line-height:1.1;color:var(--white);margin-bottom:.4rem}
+.head h1 strong{font-weight:600}
+.head p{font-size:.88rem;color:var(--sky);line-height:1.55}
+
+/* Beneficios */
+.perks{display:flex;gap:1.1rem;margin-bottom:1.8rem;flex-wrap:wrap}
+.perk{display:flex;align-items:center;gap:.4rem;font-size:.75rem;color:var(--sky)}
+.perk-ico{font-size:.9rem}
+
+/* Form */
+.form{display:flex;flex-direction:column;gap:.7rem}
+.field{display:flex;flex-direction:column;gap:.28rem}
+.field label{font-size:.75rem;font-weight:500;color:var(--sky)}
+.field input{
+  background:var(--night2);border:1px solid var(--white10);border-radius:8px;
+  padding:.8rem 1rem;font-family:'DM Sans',system-ui,sans-serif;
+  font-size:.9rem;color:var(--white);outline:none;
+  transition:border-color .15s,box-shadow .15s;-webkit-appearance:none;
+}
+.field input::placeholder{color:rgba(142,169,189,.35)}
+.field input:focus{border-color:rgba(255,255,255,.25);box-shadow:0 0 0 3px rgba(255,255,255,.04)}
+.field input.err{border-color:rgba(255,59,48,.4);box-shadow:0 0 0 3px rgba(255,59,48,.07)}
+.field-err{font-size:.73rem;color:var(--red);min-height:.85em}
+.pw-wrap{position:relative}
+.pw-wrap input{padding-right:2.7rem}
+.pw-tog{position:absolute;right:.8rem;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:rgba(142,169,189,.5);display:flex;padding:.1rem;border-radius:4px;transition:color .12s}
+.pw-tog:hover{color:var(--white80)}
+
+/* Términos */
+.terms-row{display:flex;align-items:flex-start;gap:.6rem;padding:.1rem 0}
+.terms-row input[type=checkbox]{width:15px;height:15px;flex-shrink:0;margin-top:2px;accent-color:var(--green);cursor:pointer}
+.terms-row label{font-size:.78rem;color:var(--sky);line-height:1.45;cursor:pointer}
+.terms-row a{color:var(--white80);text-decoration:none;border-bottom:1px solid var(--white20)}
+.terms-row a:hover{border-color:var(--white)}
+
+/* Botones */
+.btn-main{
+  width:100%;background:var(--green);border:none;border-radius:9px;
+  padding:.88rem 1.5rem;font-family:'DM Sans',system-ui,sans-serif;
+  font-size:.93rem;font-weight:600;color:var(--night);
+  cursor:pointer;margin-top:.2rem;
+  display:flex;align-items:center;justify-content:center;gap:.5rem;
+  transition:background .15s,transform .1s;
+}
+.btn-main:hover{background:#19a862}
+.btn-main:active{transform:scale(.98)}
+.btn-main:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.spin{animation:rot .8s linear infinite}
+@keyframes rot{to{transform:rotate(360deg)}}
+
+.divider{display:flex;align-items:center;gap:.7rem;margin:.2rem 0}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--white10)}
+.divider span{font-size:.75rem;color:var(--sky);white-space:nowrap}
+
+.btn-google{
+  width:100%;background:transparent;border:1px solid var(--white10);border-radius:9px;
+  padding:.8rem 1.5rem;font-family:'DM Sans',system-ui,sans-serif;
+  font-size:.88rem;font-weight:400;color:var(--white50);
+  cursor:pointer;display:flex;align-items:center;justify-content:center;gap:.55rem;
+  transition:background .15s,border-color .15s;
+}
+.btn-google:hover{background:var(--white06);border-color:var(--white20)}
+
+/* Login link */
+.login-link{text-align:center;font-size:.8rem;color:var(--sky);margin-top:1.2rem}
+.login-link a{color:var(--white);font-weight:500;text-decoration:none;border-bottom:1px solid var(--white20);padding-bottom:1px}
+.login-link a:hover{border-color:var(--white)}
+
+/* Step indicator */
+.steps{display:flex;align-items:center;gap:.4rem;margin-bottom:1.5rem}
+.step-dot{width:6px;height:6px;border-radius:50%}
+.step-dot.act{background:var(--white);width:18px;border-radius:3px}
+.step-dot.done{background:var(--green)}
+.step-dot.pend{background:var(--white10)}
+
+@media(max-width:480px){.page{padding:1.75rem 1.25rem 2rem}.head h1{font-size:1.65rem}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
 </head>
 <body>
-  <div class="auth-layout">
-    <!-- Panel izquierdo: reutilizado -->
-    <div class="map-panel" aria-hidden="true">
-      <div class="map-bg">
-        <svg class="topo-lines" viewBox="0 0 600 800" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
-          <defs><filter id="blur-slight"><feGaussianBlur stdDeviation="1.2"/></filter></defs>
-          <g filter="url(#blur-slight)" stroke="#3BB273" stroke-width="1" fill="none" opacity="0.18">
-            <path d="M-40,200 Q100,140 260,180 T600,160"/><path d="M-40,280 Q80,220 240,250 T620,230"/>
-            <path d="M-40,360 Q100,295 280,335 T640,310"/><path d="M-40,440 Q80,375 260,410 T640,390"/>
-            <path d="M-40,520 Q110,455 290,490 T640,470"/>
-          </g>
-          <circle cx="180" cy="310" r="5" fill="#E84855" opacity="0.6"/>
-          <circle cx="180" cy="310" r="12" fill="#E84855" opacity="0.15"/>
-          <circle cx="380" cy="420" r="5" fill="#F2A65A" opacity="0.55"/>
-          <circle cx="380" cy="420" r="12" fill="#F2A65A" opacity="0.12"/>
-        </svg>
-      </div>
-      <div class="map-panel-content">
-        <div class="brand-mark">
-          <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
-            <circle cx="20" cy="20" r="20" fill="#E84855"/>
-            <path d="M20 8C15.03 8 11 12.03 11 17c0 7 9 17 9 17s9-10 9-17c0-4.97-4.03-9-9-9zm0 12.5a3.5 3.5 0 110-7 3.5 3.5 0 010 7z" fill="white"/>
-          </svg>
-          <span class="brand-name">SafeMap</span>
-        </div>
-        <div class="panel-tagline">
-          <h1>Tu reporte puede salvar una vida.</h1>
-          <p>Únete a la comunidad y ayuda a mantener Xalapa segura.</p>
-        </div>
-        <div class="incident-legend">
-          <div class="legend-item"><span class="dot dot--red"></span><span>Incendio</span></div>
-          <div class="legend-item"><span class="dot dot--amber"></span><span>Deslave</span></div>
-          <div class="legend-item"><span class="dot dot--green"></span><span>Zona segura</span></div>
-        </div>
-      </div>
+<div class="bg"></div>
+<div class="grid"></div>
+<div class="pd"></div>
+
+<div class="page">
+
+  <div class="brand">
+    <div class="brand-icon">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+        <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" fill="white"/>
+      </svg>
     </div>
-
-    <!-- Panel derecho: registro -->
-    <div class="form-panel">
-      <div class="form-container">
-        <div class="form-header">
-          <div class="mobile-brand">
-            <svg width="28" height="28" viewBox="0 0 40 40" fill="none">
-              <circle cx="20" cy="20" r="20" fill="#E84855"/>
-              <path d="M20 8C15.03 8 11 12.03 11 17c0 7 9 17 9 17s9-10 9-17c0-4.97-4.03-9-9-9zm0 12.5a3.5 3.5 0 110-7 3.5 3.5 0 010 7z" fill="white"/>
-            </svg>
-            <span class="brand-name">SafeMap</span>
-          </div>
-          <h2>Crear cuenta</h2>
-          <p class="form-subtitle">Regístrate para publicar reportes y recibir alertas en tu zona.</p>
-        </div>
-
-        <form class="auth-form" id="registerForm" novalidate>
-          <div class="field-group">
-            <label for="name">Nombre completo</label>
-            <input type="text" id="name" name="name" placeholder="Tu nombre" autocomplete="name" required />
-            <span class="field-error" id="nameError"></span>
-          </div>
-
-          <div class="field-group">
-            <label for="email">Correo electrónico</label>
-            <input type="email" id="email" name="email" placeholder="tu@correo.com" autocomplete="email" required />
-            <span class="field-error" id="emailError"></span>
-          </div>
-
-          <div class="field-group">
-            <label for="password">Contraseña</label>
-            <div class="password-wrap">
-              <input type="password" id="password" name="password" placeholder="Mínimo 8 caracteres" autocomplete="new-password" required minlength="8" />
-              <button type="button" class="toggle-pass" id="togglePass" aria-label="Mostrar contraseña">
-                <svg id="eyeIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                  <circle cx="12" cy="12" r="3"/>
-                </svg>
-              </button>
-            </div>
-            <span class="field-error" id="passwordError"></span>
-          </div>
-
-          <button type="submit" class="btn-primary" id="submitBtn">
-            <span class="btn-text">Crear cuenta</span>
-            <span class="btn-loader" hidden>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="spin">
-                <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
-              </svg>
-            </span>
-          </button>
-
-          <div class="divider"><span>o</span></div>
-
-          <button type="button" class="btn-google">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-              <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-              <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-              <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
-              <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-            </svg>
-            Registrarse con Google
-          </button>
-        </form>
-
-        <p class="register-prompt">¿Ya tienes cuenta? <a href="index.html">Inicia sesión</a></p>
-      </div>
-    </div>
+    <span class="brand-name">SafeMap<span class="brand-sep"></span><span class="brand-loc">Xalapa</span></span>
   </div>
 
-  <script>
-    const form = document.getElementById('registerForm');
-    const submitBtn = document.getElementById('submitBtn');
+  <div class="steps">
+    <div class="step-dot act"></div>
+    <div class="step-dot pend"></div>
+    <div class="step-dot pend"></div>
+  </div>
 
-    document.getElementById('togglePass').addEventListener('click', () => {
-      const inp = document.getElementById('password');
-      inp.type = inp.type === 'password' ? 'text' : 'password';
-    });
+  <div class="head">
+    <h1>Únete a<br><strong>tu comunidad.</strong></h1>
+    <p>Crea tu cuenta para publicar reportes y recibir alertas de tu zona.</p>
+  </div>
 
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      submitBtn.disabled = true;
-      submitBtn.querySelector('.btn-text').hidden = true;
-      submitBtn.querySelector('.btn-loader').hidden = false;
-      await new Promise(r => setTimeout(r, 1200));
-      window.location.href = 'map.html';
-    });
-  </script>
+  <div class="perks">
+    <div class="perk"><span class="perk-ico"></span><span>Reporta incidentes</span></div>
+    <div class="perk"><span class="perk-ico"></span><span>Alertas en tu zona</span></div>
+    <div class="perk"><span class="perk-ico"></span><span>Gratis siempre</span></div>
+  </div>
+
+  <form class="form" id="regForm" novalidate>
+    <div class="field">
+      <label for="name">Nombre completo</label>
+      <input type="text" id="name" placeholder="Tu nombre" autocomplete="name" required/>
+      <span class="field-err" id="nameErr"></span>
+    </div>
+    <div class="field">
+      <label for="email">Correo electrónico</label>
+      <input type="email" id="email" placeholder="tu@correo.com" autocomplete="email" required/>
+      <span class="field-err" id="emailErr"></span>
+    </div>
+    <div class="field">
+      <label for="pass">Contraseña</label>
+      <div class="pw-wrap">
+        <input type="password" id="pass" placeholder="Mínimo 8 caracteres" autocomplete="new-password" required/>
+        <button type="button" class="pw-tog" id="pwTog">
+          <svg id="eyeIco" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+          </svg>
+        </button>
+      </div>
+      <span class="field-err" id="passErr"></span>
+    </div>
+
+    <div class="terms-row">
+      <input type="checkbox" id="terms"/>
+      <label for="terms">Acepto los <a href="#">Términos de uso</a> y el <a href="#">Aviso de privacidad</a> de SafeMap.</label>
+    </div>
+
+    <button type="submit" class="btn-main" id="submitBtn">
+      <span id="btnTxt">Crear cuenta</span>
+      <svg id="spinIco" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="spin" hidden>
+        <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+      </svg>
+    </button>
+
+    <div class="divider"><span>o regístrate con</span></div>
+
+    <button type="button" class="btn-google">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
+        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+      </svg>
+      Google
+    </button>
+  </form>
+
+  <p class="login-link">¿Ya tienes cuenta? <a href="index.html">Inicia sesión</a></p>
+</div>
+
+<script>
+const form=document.getElementById('regForm'),submitBtn=document.getElementById('submitBtn'),btnTxt=document.getElementById('btnTxt'),spinIco=document.getElementById('spinIco');
+document.getElementById('pwTog').addEventListener('click',()=>{const i=document.getElementById('pass');i.type=i.type==='password'?'text':'password'});
+function vName(){const v=document.getElementById('name').value.trim(),e=document.getElementById('nameErr'),i=document.getElementById('name');if(!v){e.textContent='Ingresa tu nombre';i.classList.add('err');return false}e.textContent='';i.classList.remove('err');return true}
+function vEmail(){const v=document.getElementById('email').value.trim(),e=document.getElementById('emailErr'),i=document.getElementById('email');if(!v){e.textContent='Ingresa tu correo';i.classList.add('err');return false}if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)){e.textContent='Formato inválido';i.classList.add('err');return false}e.textContent='';i.classList.remove('err');return true}
+function vPass(){const v=document.getElementById('pass').value,e=document.getElementById('passErr'),i=document.getElementById('pass');if(!v||v.length<8){e.textContent='Mínimo 8 caracteres';i.classList.add('err');return false}e.textContent='';i.classList.remove('err');return true}
+document.getElementById('name').addEventListener('blur',vName);
+document.getElementById('email').addEventListener('blur',vEmail);
+document.getElementById('pass').addEventListener('blur',vPass);
+form.addEventListener('submit',async e=>{
+  e.preventDefault();
+  if(!vName()||!vEmail()||!vPass())return;
+  if(!document.getElementById('terms').checked){alert('Acepta los términos para continuar.');return}
+  submitBtn.disabled=true;btnTxt.textContent='Creando...';spinIco.hidden=false;
+  await new Promise(r=>setTimeout(r,1500));
+  window.location.href='map.html';
+});
+</script>
 </body>
 </html>

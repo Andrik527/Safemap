@@ -1,6 +1,3 @@
-/* =============================================
-   SafeMap — map.css
-   ============================================= */
 
 :root {
   --navy:    #1B3A4B;
@@ -31,7 +28,7 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html, body { height: 100%; font-family: var(--font-body); -webkit-font-smoothing: antialiased; }
 
-/* ── Topbar ── */
+
 .topbar {
   position: fixed;
   top: 0; left: 0; right: 0;
@@ -120,7 +117,7 @@ html, body { height: 100%; font-family: var(--font-body); -webkit-font-smoothing
 
 .btn-topbar-login:hover { background: #d13744; }
 
-/* ── App layout ── */
+
 .app-layout {
   position: fixed;
   top: var(--topbar-h);
@@ -128,7 +125,7 @@ html, body { height: 100%; font-family: var(--font-body); -webkit-font-smoothing
   display: flex;
 }
 
-/* ── Sidebar ── */
+
 .sidebar {
   width: var(--sidebar-w);
   background: var(--white);
@@ -171,7 +168,7 @@ html, body { height: 100%; font-family: var(--font-body); -webkit-font-smoothing
   padding: 0 6px;
 }
 
-/* ── Filtros ── */
+
 .filter-bar {
   display: flex;
   gap: 0.4rem;
@@ -217,7 +214,7 @@ html, body { height: 100%; font-family: var(--font-body); -webkit-font-smoothing
   flex-shrink: 0;
 }
 
-/* ── Lista de reportes ── */
+
 .report-list {
   flex: 1;
   overflow-y: auto;
@@ -247,7 +244,7 @@ html, body { height: 100%; font-family: var(--font-body); -webkit-font-smoothing
   color: var(--muted);
 }
 
-/* ── Tarjeta de reporte ── */
+
 .report-card {
   padding: 0.9rem 1.1rem;
   border-bottom: 1px solid var(--border);
@@ -298,7 +295,7 @@ html, body { height: 100%; font-family: var(--font-body); -webkit-font-smoothing
   gap: 0.4rem;
 }
 
-/* ── Footer sidebar ── */
+
 .sidebar-footer {
   padding: 0.85rem 1.1rem;
   border-top: 1px solid var(--border);
@@ -318,7 +315,7 @@ html, body { height: 100%; font-family: var(--font-body); -webkit-font-smoothing
 
 .guides-link:hover { text-decoration: underline; }
 
-/* ── Sidebar toggle (mobile) ── */
+
 .sidebar-toggle {
   display: none;
   position: fixed;
@@ -350,7 +347,7 @@ html, body { height: 100%; font-family: var(--font-body); -webkit-font-smoothing
   background: #e8e3d8;
 }
 
-/* Leaflet overrides */
+
 .leaflet-control-zoom {
   border: none !important;
   box-shadow: var(--shadow-card) !important;
@@ -367,7 +364,7 @@ html, body { height: 100%; font-family: var(--font-body); -webkit-font-smoothing
   background: var(--sand) !important;
 }
 
-/* ── Controles mapa ── */
+
 .map-controls {
   position: absolute;
   right: 1rem;
@@ -395,7 +392,7 @@ html, body { height: 100%; font-family: var(--font-body); -webkit-font-smoothing
 
 .map-ctrl-btn:hover { background: var(--sand); }
 
-/* ── Toast ── */
+
 .map-toast {
   position: absolute;
   bottom: 1.25rem;
@@ -413,7 +410,7 @@ html, body { height: 100%; font-family: var(--font-body); -webkit-font-smoothing
   backdrop-filter: blur(4px);
 }
 
-/* ── Popup de incidente ── */
+
 .leaflet-popup-content-wrapper {
   border-radius: var(--radius-md) !important;
   box-shadow: var(--shadow-card) !important;
@@ -465,7 +462,6 @@ html, body { height: 100%; font-family: var(--font-body); -webkit-font-smoothing
   color: var(--border);
 }
 
-/* ── FAB ── */
 .fab {
   position: fixed;
   bottom: 1.5rem;
@@ -495,7 +491,7 @@ html, body { height: 100%; font-family: var(--font-body); -webkit-font-smoothing
 
 .fab:active { transform: translateX(-50%) scale(0.97); }
 
-/* ── Modal ── */
+
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -575,7 +571,7 @@ html, body { height: 100%; font-family: var(--font-body); -webkit-font-smoothing
 
 .modal-guest-notice a:hover { text-decoration: underline; }
 
-/* Grilla de tipos */
+
 .type-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -611,7 +607,7 @@ html, body { height: 100%; font-family: var(--font-body); -webkit-font-smoothing
   color: var(--ink);
 }
 
-/* Campos del modal */
+
 .modal-field { display: flex; flex-direction: column; gap: 0.4rem; }
 
 .modal-field label {
@@ -710,7 +706,6 @@ html, body { height: 100%; font-family: var(--font-body); -webkit-font-smoothing
 .btn-submit:hover { background: #d13744; }
 .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; }
 
-/* ── Marcadores custom ── */
 .custom-marker {
   width: 28px;
   height: 28px;
@@ -731,7 +726,7 @@ html, body { height: 100%; font-family: var(--font-body); -webkit-font-smoothing
   font-size: 12px;
 }
 
-/* ── Responsive ── */
+
 @media (max-width: 768px) {
   .sidebar {
     position: fixed;
