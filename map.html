@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SafeMap — Mapa</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+  <style>
+:root{--navy:#1B3A4B;--sand:#F5F0E8;--alert:#E84855;--safe:#3BB273;--warn:#F2A65A;--blue:#3BB6D8;--moss:#6B8F71;--ink:#111C22;--muted:#697A84;--border:#D6CFC4;--white:#FFFFFF;--bg-sub:#EDE8DF;--topbar-h:52px;--sidebar-w:300px;--radius-sm:6px;--radius-md:10px;--radius-lg:16px;--shadow-card:0 2px 12px rgba(27,58,75,.10),0 1px 3px rgba(27,58,75,.06);--font-ui:'Space Grotesk',system-ui,sans-serif;--font-body:'Inter',system-ui,sans-serif}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:var(--font-body);-webkit-font-smoothing:antialiased}
+.topbar{position:fixed;top:0;left:0;right:0;height:var(--topbar-h);background:var(--navy);display:flex;align-items:center;justify-content:space-between;padding:0 1.25rem;z-index:1000;box-shadow:0 1px 0 rgba(255,255,255,.06)}
+.topbar-left{display:flex;align-items:center;gap:1.1rem}
+.topbar-brand{display:flex;align-items:center;gap:.55rem;text-decoration:none}
+.topbar-brand span{font-family:var(--font-ui);font-weight:700;font-size:1rem;color:var(--white);letter-spacing:-.02em}
+.topbar-location{font-family:var(--font-ui);font-size:.78rem;font-weight:500;color:rgba(255,255,255,.5);display:flex;align-items:center;gap:.3rem;border-left:1px solid rgba(255,255,255,.1);padding-left:1.1rem}
+.topbar-right{display:flex;align-items:center;gap:.75rem}
+.mode-tag{font-family:var(--font-ui);font-size:.7rem;font-weight:600;padding:.25rem .6rem;border-radius:999px}
+.mode-tag--guest{background:rgba(242,166,90,.18);color:var(--warn);border:1px solid rgba(242,166,90,.3)}
+.btn-topbar-login{font-family:var(--font-ui);font-size:.8rem;font-weight:600;color:var(--white);background:var(--alert);border:none;border-radius:var(--radius-sm);padding:.4rem .85rem;text-decoration:none;cursor:pointer;transition:background .15s}
+.btn-topbar-login:hover{background:#d13744}
+.app-layout{position:fixed;top:var(--topbar-h);left:0;right:0;bottom:0;display:flex}
+.sidebar{width:var(--sidebar-w);background:var(--white);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;flex-shrink:0;z-index:100}
+.sidebar-header{padding:1rem 1.1rem .75rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.sidebar-title{font-family:var(--font-ui);font-size:.88rem;font-weight:600;color:var(--ink)}
+.active-count{font-family:var(--font-ui);font-size:.75rem;font-weight:700;background:var(--alert);color:var(--white);border-radius:999px;min-width:22px;height:22px;display:flex;align-items:center;justify-content:center;padding:0 6px}
+.filter-bar{display:flex;gap:.4rem;padding:.75rem 1.1rem;overflow-x:auto;flex-shrink:0;scrollbar-width:none;border-bottom:1px solid var(--border)}
+.filter-bar::-webkit-scrollbar{display:none}
+.filter-chip{font-family:var(--font-ui);font-size:.75rem;font-weight:500;color:var(--muted);background:var(--sand);border:1px solid transparent;border-radius:999px;padding:.3rem .75rem;cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:.35rem;transition:all .12s}
+.filter-chip:hover{background:var(--bg-sub);color:var(--ink)}
+.filter-chip--active{background:var(--navy);color:var(--white)}
+.chip-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.report-list{flex:1;overflow-y:auto;padding:.5rem 0}
+.empty-state{padding:2.5rem 1.5rem;text-align:center;display:flex;flex-direction:column;align-items:center;gap:.4rem}
+.empty-icon{font-size:2rem}
+.empty-state p{font-family:var(--font-ui);font-size:.88rem;font-weight:600;color:var(--ink)}
+.empty-state span{font-size:.8rem;color:var(--muted)}
+.report-card{padding:.9rem 1.1rem;border-bottom:1px solid var(--border);cursor:pointer;transition:background .12s;display:flex;gap:.75rem;align-items:flex-start}
+.report-card:hover{background:var(--sand)}
+.report-card.is-selected{background:rgba(27,58,75,.05)}
+.report-type-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-top:.3rem}
+.report-card-body{flex:1;min-width:0}
+.report-card-title{font-family:var(--font-ui);font-size:.85rem;font-weight:600;color:var(--ink);margin-bottom:.2rem}
+.report-card-desc{font-size:.78rem;color:var(--muted);line-height:1.5;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.report-card-meta{font-size:.72rem;color:var(--border);margin-top:.35rem;display:flex;align-items:center;gap:.4rem}
+.sidebar-footer{padding:.85rem 1.1rem;border-top:1px solid var(--border);flex-shrink:0}
+.guides-link{display:inline-flex;align-items:center;gap:.45rem;font-family:var(--font-ui);font-size:.8rem;font-weight:500;color:var(--moss);text-decoration:none}
+.guides-link:hover{text-decoration:underline}
+.sidebar-toggle{display:none;position:fixed;top:calc(var(--topbar-h) + 10px);left:10px;z-index:110;background:var(--navy);color:var(--white);border:none;border-radius:var(--radius-sm);width:38px;height:38px;align-items:center;justify-content:center;cursor:pointer;box-shadow:var(--shadow-card)}
+.map-wrapper{flex:1;position:relative;overflow:hidden}
+#map{width:100%;height:100%;background:#e8e3d8}
+.leaflet-control-zoom{border:none!important;box-shadow:var(--shadow-card)!important}
+.leaflet-control-zoom a{font-family:var(--font-ui)!important;color:var(--navy)!important;background:var(--white)!important;border:1px solid var(--border)!important}
+.leaflet-control-zoom a:hover{background:var(--sand)!important}
+.map-controls{position:absolute;right:1rem;bottom:5rem;display:flex;flex-direction:column;gap:.5rem;z-index:500}
+.map-ctrl-btn{width:36px;height:36px;background:var(--white);border:1px solid var(--border);border-radius:var(--radius-sm);box-shadow:var(--shadow-card);cursor:pointer;color:var(--navy);display:flex;align-items:center;justify-content:center;transition:background .12s}
+.map-ctrl-btn:hover{background:var(--sand)}
+.map-toast{position:absolute;bottom:1.25rem;left:50%;transform:translateX(-50%);background:rgba(27,58,75,.92);color:var(--white);font-family:var(--font-ui);font-size:.82rem;font-weight:500;padding:.6rem 1.1rem;border-radius:999px;white-space:nowrap;z-index:500;backdrop-filter:blur(4px)}
+.leaflet-popup-content-wrapper{border-radius:var(--radius-md)!important;box-shadow:var(--shadow-card)!important;border:1px solid var(--border);padding:0!important;overflow:hidden}
+.leaflet-popup-content{margin:0!important;width:auto!important}
+.leaflet-popup-tip{background:var(--white)!important}
+.incident-popup{padding:1rem;min-width:180px;max-width:240px}
+.popup-type{font-family:var(--font-ui);font-size:.72rem;font-weight:600;letter-spacing:.03em;margin-bottom:.3rem;text-transform:uppercase;opacity:.7}
+.popup-title{font-family:var(--font-ui);font-size:.9rem;font-weight:700;color:var(--ink);margin-bottom:.3rem}
+.popup-desc{font-size:.8rem;color:var(--muted);line-height:1.5;margin-bottom:.5rem}
+.popup-time{font-size:.72rem;color:var(--border)}
+.fab{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);background:var(--alert);color:var(--white);font-family:var(--font-ui);font-size:.9rem;font-weight:600;border:none;border-radius:999px;padding:.85rem 2rem;display:flex;align-items:center;gap:.5rem;cursor:pointer;box-shadow:0 4px 20px rgba(232,72,85,.4);z-index:900;transition:background .15s,transform .1s,box-shadow .15s}
+.fab:hover{background:#d13744;box-shadow:0 6px 24px rgba(232,72,85,.5)}
+.fab:active{transform:translateX(-50%) scale(.97)}
+.modal-overlay{position:fixed;inset:0;background:rgba(17,28,34,.5);z-index:1100;display:flex;align-items:flex-end;justify-content:center;backdrop-filter:blur(2px);padding:0 0 1rem}
+.modal-overlay[hidden]{display:none}
+.modal{background:var(--white);border-radius:var(--radius-lg) var(--radius-lg) 0 0;width:100%;max-width:480px;max-height:90vh;overflow-y:auto;box-shadow:0 -4px 30px rgba(27,58,75,.2)}
+@media(min-width:640px){.modal-overlay{align-items:center;padding:1.5rem}.modal{border-radius:var(--radius-lg)}}
+.modal-header{padding:1.25rem 1.25rem .75rem;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border)}
+.modal-header h3{font-family:var(--font-ui);font-size:1rem;font-weight:700;color:var(--ink)}
+.modal-close{background:none;border:none;cursor:pointer;color:var(--muted);display:flex;padding:.25rem;border-radius:var(--radius-sm);transition:color .12s}
+.modal-close:hover{color:var(--ink)}
+.modal-body{padding:1.25rem;display:flex;flex-direction:column;gap:1rem}
+.modal-guest-notice{display:flex;align-items:center;gap:.5rem;background:rgba(242,166,90,.1);border:1px solid rgba(242,166,90,.25);border-radius:var(--radius-sm);padding:.7rem .9rem;font-size:.82rem;color:var(--ink)}
+.modal-guest-notice a{color:var(--alert);font-weight:600;text-decoration:none}
+.type-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.5rem}
+.type-btn{display:flex;flex-direction:column;align-items:center;gap:.4rem;padding:.85rem .5rem;background:var(--sand);border:1.5px solid transparent;border-radius:var(--radius-md);cursor:pointer;transition:all .12s}
+.type-btn:hover{border-color:var(--navy)}
+.type-btn.is-selected{background:rgba(27,58,75,.06);border-color:var(--navy)}
+.type-icon{font-size:1.4rem}
+.type-btn span:last-child{font-family:var(--font-ui);font-size:.75rem;font-weight:500;color:var(--ink)}
+.modal-field{display:flex;flex-direction:column;gap:.4rem}
+.modal-field label{font-family:var(--font-ui);font-size:.82rem;font-weight:600;color:var(--ink)}
+.modal-field textarea{font-family:var(--font-body);font-size:.88rem;color:var(--ink);background:var(--white);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:.65rem .85rem;resize:vertical;min-height:80px;outline:none;transition:border-color .15s}
+.modal-field textarea:focus{border-color:var(--navy);box-shadow:0 0 0 3px rgba(27,58,75,.1)}
+.loc-info{display:flex;align-items:center;gap:.4rem;font-size:.82rem;color:var(--muted);padding:.5rem .75rem;background:var(--sand);border-radius:var(--radius-sm)}
+.btn-loc{font-family:var(--font-ui);font-size:.8rem;font-weight:500;color:var(--navy);background:none;border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:.5rem .85rem;cursor:pointer;display:inline-flex;align-items:center;gap:.4rem;transition:border-color .12s;align-self:flex-start}
+.btn-loc:hover{border-color:var(--navy)}
+.modal-footer{padding:0 1.25rem 1.25rem;display:flex;gap:.65rem}
+.modal-footer[hidden]{display:none}
+.btn-cancel{font-family:var(--font-ui);font-size:.88rem;font-weight:500;color:var(--muted);background:none;border:1.5px solid var(--border);border-radius:var(--radius-md);padding:.7rem 1.25rem;cursor:pointer;transition:border-color .12s}
+.btn-cancel:hover{border-color:var(--navy);color:var(--ink)}
+.btn-submit{flex:1;font-family:var(--font-ui);font-size:.9rem;font-weight:600;color:var(--white);background:var(--alert);border:none;border-radius:var(--radius-md);padding:.7rem 1.25rem;cursor:pointer;transition:background .15s}
+.btn-submit:hover{background:#d13744}
+.btn-submit:disabled{opacity:.5;cursor:not-allowed}
+@media(max-width:768px){.sidebar{position:fixed;top:var(--topbar-h);left:0;bottom:0;transform:translateX(-100%);transition:transform .25s ease;z-index:200}.sidebar.is-open{transform:translateX(0)}.sidebar-toggle{display:flex}.topbar-location{display:none}.fab{bottom:2rem}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-left">
+      <a href="index.html" class="topbar-brand">
+        <svg width="24" height="24" viewBox="0 0 40 40" fill="none"><circle cx="20" cy="20" r="20" fill="#E84855"/><path d="M20 8C15.03 8 11 12.03 11 17c0 7 9 17 9 17s9-10 9-17c0-4.97-4.03-9-9-9zm0 12.5a3.5 3.5 0 110-7 3.5 3.5 0 010 7z" fill="white"/></svg>
+        <span>SafeMap</span>
+      </a>
+      <span class="topbar-location">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 010 20M12 2a15.3 15.3 0 000 20"/></svg>
+        Xalapa, Ver.
+      </span>
+    </div>
+    <div class="topbar-right">
+      <div class="mode-tag mode-tag--guest">Modo invitado</div>
+      <a href="index.html" class="btn-topbar-login">Iniciar sesión</a>
+    </div>
+  </header>
+
+  <div class="app-layout">
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <span class="sidebar-title">Reportes activos</span>
+        <div class="active-count" id="activeCount">0</div>
+      </div>
+      <div class="filter-bar">
+        <button class="filter-chip filter-chip--active" data-filter="all">Todos</button>
+        <button class="filter-chip" data-filter="fire"><span class="chip-dot" style="background:#E84855"></span>Incendio</button>
+        <button class="filter-chip" data-filter="landslide"><span class="chip-dot" style="background:#F2A65A"></span>Deslave</button>
+        <button class="filter-chip" data-filter="flood"><span class="chip-dot" style="background:#3BB6D8"></span>Inundación</button>
+        <button class="filter-chip" data-filter="accident"><span class="chip-dot" style="background:#6B8F71"></span>Accidente</button>
+      </div>
+      <div class="report-list" id="reportList">
+        <div class="empty-state" id="emptyState">
+          <div class="empty-icon">🗺️</div>
+          <p>Sin reportes activos</p>
+          <span>Los nuevos reportes aparecerán aquí.</span>
+        </div>
+      </div>
+      <div class="sidebar-footer">
+        <a href="#" class="guides-link">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          Guías de prevención
+        </a>
+      </div>
+    </aside>
+
+    <button class="sidebar-toggle" id="sidebarToggle" aria-label="Abrir panel">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
+
+    <main class="map-wrapper">
+      <div id="map"></div>
+      <div class="map-controls">
+        <button class="map-ctrl-btn" id="locateMe" title="Mi ubicación">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
+        </button>
+      </div>
+      <div class="map-toast" id="mapToast" hidden><span id="toastMsg"></span></div>
+    </main>
+  </div>
+
+  <button class="fab" id="reportFab">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    Reportar incidente
+  </button>
+
+  <div class="modal-overlay" id="modalOverlay" hidden>
+    <div class="modal" role="dialog" aria-modal="true">
+      <div class="modal-header">
+        <h3>Nuevo reporte</h3>
+        <button class="modal-close" id="modalClose"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+      </div>
+      <div class="modal-body">
+        <div class="modal-guest-notice" id="modalGuestNotice">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          Necesitas una cuenta para publicar reportes. <a href="index.html">Inicia sesión</a>
+        </div>
+        <div class="type-grid">
+          <button class="type-btn" data-type="fire"><span class="type-icon">🔥</span><span>Incendio</span></button>
+          <button class="type-btn" data-type="landslide"><span class="type-icon">⛰️</span><span>Deslave</span></button>
+          <button class="type-btn" data-type="flood"><span class="type-icon">🌊</span><span>Inundación</span></button>
+          <button class="type-btn" data-type="accident"><span class="type-icon">🚨</span><span>Accidente</span></button>
+          <button class="type-btn" data-type="other"><span class="type-icon">⚠️</span><span>Otro</span></button>
+        </div>
+        <div class="modal-field" id="descField" hidden>
+          <label for="reportDesc">Descripción breve</label>
+          <textarea id="reportDesc" rows="3" placeholder="Describe lo que estás viendo..."></textarea>
+        </div>
+        <div class="modal-field" id="locField" hidden>
+          <label>Ubicación</label>
+          <div class="loc-info"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg><span id="locText">Usa tu ubicación o el centro del mapa</span></div>
+          <button class="btn-loc" id="useMyLoc"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>Usar mi ubicación</button>
+        </div>
+      </div>
+      <div class="modal-footer" id="modalFooter" hidden>
+        <button class="btn-cancel" id="cancelReport">Cancelar</button>
+        <button class="btn-submit" id="submitReport">Publicar reporte</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+  <script>
+const DEMO=[{id:1,type:'fire',label:'Incendio',emoji:'🔥',color:'#E84855',title:'Incendio en Colonia Obrera',desc:'Humo visible desde varias cuadras, posible incendio en bodega.',lat:19.5438,lng:-96.9172,time:'Hace 12 min'},{id:2,type:'landslide',label:'Deslave',emoji:'⛰️',color:'#F2A65A',title:'Deslave en carretera Xalapa-Coatepec',desc:'Tramo bloqueado, se recomienda tomar ruta alterna.',lat:19.4780,lng:-96.9440,time:'Hace 35 min'},{id:3,type:'flood',label:'Inundación',emoji:'🌊',color:'#3BB6D8',title:'Calle inundada en Las Ánimas',desc:'Agua llegando hasta la banqueta, evitar el área.',lat:19.5590,lng:-96.9355,time:'Hace 1 hr'}];
+let activeFilter='all',selectedId=null,isGuest=true,markers={};
+const map=L.map('map',{center:[19.543,-96.927],zoom:13});
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',maxZoom:19}).addTo(map);
+function mkIcon(r){return L.divIcon({className:'',html:`<div style="width:32px;height:32px;background:${r.color};border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:2.5px solid rgba(255,255,255,.9);box-shadow:0 2px 8px rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center;"><span style="transform:rotate(45deg);font-size:14px;line-height:1">${r.emoji}</span></div>`,iconSize:[32,32],iconAnchor:[16,32],popupAnchor:[0,-34]})}
+function mkPopup(r){return`<div class="incident-popup"><div class="popup-type" style="color:${r.color}">${r.label}</div><div class="popup-title">${r.title}</div><div class="popup-desc">${r.desc}</div><div class="popup-time">${r.time}</div></div>`}
+function renderMarkers(){Object.values(markers).forEach(m=>map.removeLayer(m));markers={};DEMO.filter(r=>activeFilter==='all'||r.type===activeFilter).forEach(r=>{const m=L.marker([r.lat,r.lng],{icon:mkIcon(r)}).bindPopup(mkPopup(r),{maxWidth:260}).addTo(map);m.on('click',()=>selectReport(r.id));markers[r.id]=m})}
+function renderList(){const list=document.getElementById('reportList'),empty=document.getElementById('emptyState'),cnt=document.getElementById('activeCount'),filtered=DEMO.filter(r=>activeFilter==='all'||r.type===activeFilter);cnt.textContent=filtered.length;list.querySelectorAll('.report-card').forEach(e=>e.remove());if(!filtered.length){empty.hidden=false;showToast('Sin reportes en este filtro');return}empty.hidden=true;hideToast();filtered.forEach(r=>{const c=document.createElement('div');c.className='report-card';c.dataset.id=r.id;c.innerHTML=`<div class="report-type-dot" style="background:${r.color}"></div><div class="report-card-body"><div class="report-card-title">${r.title}</div><div class="report-card-desc">${r.desc}</div><div class="report-card-meta">${r.emoji} ${r.label} &middot; ${r.time}</div></div>`;c.addEventListener('click',()=>selectReport(r.id));list.appendChild(c)})}
+function selectReport(id){selectedId=id;document.querySelectorAll('.report-card').forEach(e=>e.classList.toggle('is-selected',parseInt(e.dataset.id)===id));const m=markers[id],r=DEMO.find(x=>x.id===id);if(m&&r){map.setView([r.lat,r.lng],15,{animate:true});m.openPopup()}}
+document.querySelectorAll('.filter-chip').forEach(c=>c.addEventListener('click',()=>{document.querySelectorAll('.filter-chip').forEach(x=>x.classList.remove('filter-chip--active'));c.classList.add('filter-chip--active');activeFilter=c.dataset.filter;renderMarkers();renderList()}));
+document.getElementById('locateMe').addEventListener('click',()=>{if(!navigator.geolocation)return showToast('Sin soporte de geolocalización');navigator.geolocation.getCurrentPosition(p=>map.setView([p.coords.latitude,p.coords.longitude],15,{animate:true}),()=>showToast('No se pudo obtener tu ubicación'))});
+function showToast(m){document.getElementById('toastMsg').textContent=m;document.getElementById('mapToast').hidden=false}
+function hideToast(){document.getElementById('mapToast').hidden=true}
+const sidebar=document.getElementById('sidebar'),sidebarToggle=document.getElementById('sidebarToggle');
+sidebarToggle.addEventListener('click',()=>sidebar.classList.toggle('is-open'));
+map.on('click',()=>{if(window.innerWidth<=768)sidebar.classList.remove('is-open')});
+const overlay=document.getElementById('modalOverlay'),modalClose=document.getElementById('modalClose'),cancelBtn=document.getElementById('cancelReport'),submitBtn=document.getElementById('submitReport'),guestNotice=document.getElementById('modalGuestNotice'),modalFooter=document.getElementById('modalFooter'),descField=document.getElementById('descField'),locField=document.getElementById('locField');
+let selType=null,rLat=null,rLng=null;
+document.getElementById('reportFab').addEventListener('click',()=>{overlay.hidden=false;selType=null;document.querySelectorAll('.type-btn').forEach(b=>b.classList.remove('is-selected'));descField.hidden=true;locField.hidden=true;modalFooter.hidden=true;guestNotice.hidden=!isGuest;document.body.style.overflow='hidden'});
+function closeModal(){overlay.hidden=true;document.body.style.overflow=''}
+modalClose.addEventListener('click',closeModal);cancelBtn.addEventListener('click',closeModal);
+overlay.addEventListener('click',e=>{if(e.target===overlay)closeModal()});
+document.querySelectorAll('.type-btn').forEach(b=>b.addEventListener('click',()=>{if(isGuest)return;document.querySelectorAll('.type-btn').forEach(x=>x.classList.remove('is-selected'));b.classList.add('is-selected');selType=b.dataset.type;descField.hidden=false;locField.hidden=false;modalFooter.hidden=false}));
+document.getElementById('useMyLoc').addEventListener('click',()=>{if(!navigator.geolocation)return;navigator.geolocation.getCurrentPosition(p=>{rLat=p.coords.latitude;rLng=p.coords.longitude;document.getElementById('locText').textContent=`${rLat.toFixed(5)}, ${rLng.toFixed(5)}`})});
+submitBtn.addEventListener('click',()=>{const desc=document.getElementById('reportDesc').value.trim();if(!selType){alert('Selecciona un tipo.');return}if(!desc){alert('Agrega una descripción.');return}const tm={fire:{label:'Incendio',emoji:'🔥',color:'#E84855'},landslide:{label:'Deslave',emoji:'⛰️',color:'#F2A65A'},flood:{label:'Inundación',emoji:'🌊',color:'#3BB6D8'},accident:{label:'Accidente',emoji:'🚨',color:'#6B8F71'},other:{label:'Otro',emoji:'⚠️',color:'#697A84'}};const t=tm[selType],c=map.getCenter(),nr={id:Date.now(),type:selType,...t,title:`${t.label} reportado`,desc,lat:rLat||c.lat,lng:rLng||c.lng,time:'Ahora'};DEMO.unshift(nr);renderMarkers();renderList();closeModal();selectReport(nr.id);showToast('Reporte publicado');setTimeout(hideToast,3000)});
+renderMarkers();renderList();
+  </script>
+</body>
+</html>
