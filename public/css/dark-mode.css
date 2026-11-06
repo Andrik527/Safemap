@@ -1,0 +1,343 @@
+/* ================================================================
+   SafeMap — dark-mode.css
+   Se activa cuando map-theme.js pone [data-theme="dark"] en <html>
+   Agregar al final de map.css o importar en app.blade.php
+   ================================================================ */
+
+/* ── Variables oscuras ── */
+[data-theme="dark"] {
+  --navy:    #0E1E2C;
+  --sand:    #131F2B;
+  --ink:     #E8EDF2;
+  --muted:   #8EA9BD;
+  --border:  #1E3345;
+  --white:   #182533;
+  --bg-sub:  #1A2E40;
+  --surface:     #182533;
+  --surface-2:   #1E3040;
+  --surface-3:   #243A4E;
+}
+
+/* ── Topbar ── */
+[data-theme="dark"] .topbar {
+  background: #0A1520;
+  box-shadow: 0 1px 0 rgba(255,255,255,.04);
+}
+
+/* ── Sidebar ── */
+[data-theme="dark"] .sidebar {
+  background: #111E2B;
+  border-right-color: #1E3345;
+}
+
+[data-theme="dark"] .sidebar-header,
+[data-theme="dark"] .filter-bar,
+[data-theme="dark"] .sidebar-footer {
+  border-color: #1E3345;
+}
+
+[data-theme="dark"] .sidebar-title,
+[data-theme="dark"] .report-card-title,
+[data-theme="dark"] .empty-state p {
+  color: #E8EDF2;
+}
+
+[data-theme="dark"] .report-card-desc,
+[data-theme="dark"] .report-card-meta,
+[data-theme="dark"] .empty-state span,
+[data-theme="dark"] .guides-link {
+  color: #8EA9BD;
+}
+
+[data-theme="dark"] .report-card {
+  border-bottom-color: #1E3345;
+}
+
+[data-theme="dark"] .report-card:hover {
+  background: rgba(255,255,255,.04);
+}
+
+[data-theme="dark"] .report-card.is-selected {
+  background: rgba(255,255,255,.07);
+}
+
+/* ── Filter chips ── */
+[data-theme="dark"] .filter-chip {
+  background: #1A2E40;
+  color: #8EA9BD;
+}
+
+[data-theme="dark"] .filter-chip:hover {
+  background: #1E3850;
+  color: #E8EDF2;
+}
+
+[data-theme="dark"] .filter-chip--active {
+  background: #2563a8;
+  color: #fff;
+}
+
+/* ── Controles del mapa ── */
+[data-theme="dark"] .map-ctrl-btn {
+  background: #111E2B;
+  border-color: #1E3345;
+  color: #8EA9BD;
+}
+
+[data-theme="dark"] .map-ctrl-btn:hover {
+  background: #1A2E40;
+  color: #E8EDF2;
+}
+
+/* ── FAB ── */
+[data-theme="dark"] .fab {
+  box-shadow: 0 4px 20px rgba(232,72,85,.5);
+}
+
+/* ── Bottom sheet ── */
+[data-theme="dark"] .bottom-sheet {
+  background: #111E2B;
+}
+
+[data-theme="dark"] .sheet-header {
+  border-bottom-color: #1E3345;
+}
+
+[data-theme="dark"] .sheet-title {
+  color: #E8EDF2;
+}
+
+[data-theme="dark"] .sheet-close {
+  background: #1A2E40;
+  color: #8EA9BD;
+}
+
+[data-theme="dark"] .sheet-close:hover {
+  background: #1E3850;
+}
+
+[data-theme="dark"] .incident-type-btn {
+  background: #1A2E40;
+  border-color: transparent;
+}
+
+[data-theme="dark"] .incident-type-btn:hover {
+  border-color: #2563a8;
+}
+
+[data-theme="dark"] .incident-type-btn.selected {
+  background: rgba(37,99,168,.15);
+  border-color: #2563a8;
+}
+
+[data-theme="dark"] .incident-type-btn span:last-child {
+  color: #E8EDF2;
+}
+
+[data-theme="dark"] .sheet-textarea {
+  background: #1A2E40;
+  border-color: #1E3345;
+  color: #E8EDF2;
+}
+
+[data-theme="dark"] .sheet-textarea:focus {
+  border-color: #2563a8;
+  box-shadow: 0 0 0 3px rgba(37,99,168,.2);
+  background: #1E3345;
+}
+
+[data-theme="dark"] .sheet-textarea::placeholder {
+  color: #4A6880;
+}
+
+[data-theme="dark"] .sheet-location-row {
+  background: #1A2E40;
+  color: #8EA9BD;
+}
+
+/* ── Popups de Leaflet ── */
+[data-theme="dark"] .leaflet-popup-content-wrapper {
+  background: rgba(14,30,44,.97) !important;
+  border-color: #1E3345 !important;
+}
+
+[data-theme="dark"] .leaflet-popup-tip {
+  background: #0E1E2C !important;
+}
+
+[data-theme="dark"] .popup-title {
+  color: #E8EDF2;
+}
+
+[data-theme="dark"] .popup-desc {
+  color: #8EA9BD;
+}
+
+/* ── Toast ── */
+[data-theme="dark"] .map-toast {
+  background: rgba(14,30,44,.97);
+}
+
+[data-theme="dark"] .toast-notification {
+  background: #0A1520;
+  border: 1px solid #1E3345;
+}
+
+/* ── Reputación chip ── */
+[data-theme="dark"] .rep-chip {
+  background: rgba(255,255,255,.06);
+  border-color: rgba(255,255,255,.1);
+  color: #E8EDF2;
+}
+
+[data-theme="dark"] .rep-panel {
+  background: #111E2B;
+  border-color: #1E3345;
+}
+
+/* ── Búsqueda ── */
+[data-theme="dark"] .map-search-box {
+  background: #111E2B;
+  border-color: #1E3345;
+}
+
+[data-theme="dark"] #searchInput {
+  background: transparent;
+  color: #E8EDF2;
+}
+
+[data-theme="dark"] #searchInput::placeholder {
+  color: #4A6880;
+}
+
+[data-theme="dark"] .map-search-results {
+  background: #111E2B;
+  border-color: #1E3345;
+}
+
+[data-theme="dark"] .map-search-result:hover {
+  background: #1A2E40;
+}
+
+/* ── Mapa Leaflet — tile oscuro al vuelo ── */
+[data-theme="dark"] .leaflet-tile-pane {
+  filter: invert(1) hue-rotate(180deg) brightness(0.82) saturate(0.65) contrast(1.05);
+}
+
+/* ── Zoom controls ── */
+[data-theme="dark"] .leaflet-control-zoom a {
+  background: #111E2B !important;
+  color: #8EA9BD !important;
+  border-color: #1E3345 !important;
+}
+
+[data-theme="dark"] .leaflet-control-zoom a:hover {
+  background: #1A2E40 !important;
+  color: #E8EDF2 !important;
+}
+
+/* ── Botón activo de geofence ── */
+[data-theme="dark"] .geo-toggle.is-active {
+  background: rgba(37,99,168,.25);
+  border-color: #2563a8;
+}
+
+/* ── Modo claro explícito (por si el sistema es dark y el usuario elige claro) ── */
+[data-theme="light"] .leaflet-tile-pane {
+  filter: none;
+}
+
+
+/* ================================================================
+   GEOFENCE — Alerta flotante de proximidad
+   ================================================================ */
+
+.geo-alert {
+  position: fixed;
+  top: 68px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1300;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: #111E2B;
+  border: 1.5px solid rgba(232,72,85,.5);
+  border-radius: 14px;
+  padding: 0.8rem 1rem;
+  max-width: min(92vw, 420px);
+  width: 100%;
+  box-shadow: 0 8px 32px rgba(0,0,0,.35);
+  animation: geo-slide-in 0.35s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+
+@keyframes geo-slide-in {
+  from { transform: translateX(-50%) translateY(-18px); opacity: 0; }
+  to   { transform: translateX(-50%) translateY(0);     opacity: 1; }
+}
+
+.geo-alert-icon {
+  font-size: 1.4rem;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.geo-alert-text {
+  flex: 1;
+  font-family: var(--font-ui, 'Space Grotesk', system-ui, sans-serif);
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #E8EDF2;
+  line-height: 1.4;
+}
+
+.geo-alert-view {
+  font-family: var(--font-ui, 'Space Grotesk', system-ui, sans-serif);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #fff;
+  background: var(--alert, #E84855);
+  border: none;
+  border-radius: 8px;
+  padding: 0.35rem 0.75rem;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s;
+}
+
+.geo-alert-view:hover { background: #d13744; }
+
+.geo-alert-close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #8EA9BD;
+  font-size: 0.85rem;
+  flex-shrink: 0;
+  padding: 0.2rem;
+  border-radius: 4px;
+  line-height: 1;
+  transition: color 0.12s;
+}
+
+.geo-alert-close:hover { color: #E8EDF2; }
+
+/* Botón toggle geofence activo */
+.geo-toggle.is-active {
+  background: rgba(232,72,85,.12);
+  border-color: rgba(232,72,85,.4);
+  color: var(--alert, #E84855);
+}
+
+/* ── Responsive ── */
+@media (max-width: 480px) {
+  .geo-alert {
+    top: 60px;
+    border-radius: 12px;
+    padding: 0.7rem 0.85rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .geo-alert { animation: none; }
+}

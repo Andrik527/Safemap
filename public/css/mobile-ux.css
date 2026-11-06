@@ -1,0 +1,1002 @@
+/* ================================================================
+   SafeMap — mobile-ux.css
+   Agrega esto al final de tu map.css existente (o impórtalo aparte)
+   Mobile-first: Bottom Sheet · Skeletons · Microinteracciones · Clusters
+   ================================================================ */
+
+/* ── Tokens adicionales ── */
+:root {
+  --surface:       #F7F5F1;
+  --surface-2:     #EDEAE4;
+  --surface-3:     #E2DED7;
+  --ink-soft:      #4A5568;
+  --shadow-float:  0 -4px 24px rgba(27, 58, 75, 0.14);
+  --shadow-pin:    0 2px 8px rgba(0,0,0,0.28);
+  --transition-sheet: cubic-bezier(0.32, 0.72, 0, 1);
+  --transition-micro: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* ================================================================
+   1. BOTTOM SHEET — Formulario de reporte
+   ================================================================ */
+
+/* Overlay oscuro detrás del sheet */
+.sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(17, 28, 34, 0.45);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  z-index: 1050;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.sheet-backdrop.is-open {
+  opacity: 1;
+  pointer-events: all;
+}
+
+/* El sheet en sí */
+.bottom-sheet {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1100;
+  background: var(--white);
+  border-radius: 20px 20px 0 0;
+  box-shadow: var(--shadow-float);
+
+  /* Altura: 55% en móvil, se puede expandir */
+  max-height: 90dvh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+
+  /* Estado inicial: fuera de pantalla */
+  transform: translateY(100%);
+  transition: transform 0.4s var(--transition-sheet);
+
+  /* Scroll suave en iOS */
+  -webkit-overflow-scrolling: touch;
+}
+
+.bottom-sheet.is-open {
+  transform: translateY(0);
+}
+
+/* Handle para arrastrar */
+.sheet-handle {
+  display: flex;
+  justify-content: center;
+  padding: 0.75rem 0 0.5rem;
+  cursor: grab;
+  user-select: none;
+}
+
+.sheet-handle::before {
+  content: '';
+  width: 36px;
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+}
+
+/* Cabecera del sheet */
+.sheet-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1.25rem 0.75rem;
+  border-bottom: 1px solid var(--surface-2);
+}
+
+.sheet-title {
+  font-family: var(--font-ui);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--ink);
+  letter-spacing: -0.02em;
+}
+
+.sheet-close {
+  width: 30px;
+  height: 30px;
+  background: var(--surface-2);
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+  transition: background 0.15s, transform 0.15s var(--transition-micro);
+}
+
+.sheet-close:hover {
+  background: var(--surface-3);
+  transform: scale(1.1);
+}
+
+.sheet-close:active {
+  transform: scale(0.92);
+}
+
+/* Cuerpo del sheet */
+.sheet-body {
+  padding: 1rem 1.25rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* Grid de tipos de incidente — más táctil en móvil */
+.incident-type-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+}
+
+.incident-type-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.9rem 0.5rem 0.75rem;
+  background: var(--surface);
+  border: 2px solid transparent;
+  border-radius: 14px;
+  cursor: pointer;
+  transition:
+    border-color 0.18s ease,
+    background 0.18s ease,
+    transform 0.18s var(--transition-micro);
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.incident-type-btn:active {
+  transform: scale(0.93);
+}
+
+.incident-type-btn.selected {
+  border-color: var(--navy);
+  background: rgba(27, 58, 75, 0.06);
+}
+
+.incident-type-btn .type-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+}
+
+/* Colores por tipo */
+.type-icon.fire       { background: rgba(232, 72, 85,  0.12); }
+.type-icon.landslide  { background: rgba(242, 166, 90, 0.12); }
+.type-icon.flood      { background: rgba(59, 182, 216, 0.12); }
+.type-icon.accident   { background: rgba(107, 143, 113,0.12); }
+.type-icon.pothole    { background: rgba(156, 136, 255,0.12); }
+.type-icon.other      { background: rgba(105, 122, 132,0.12); }
+
+.incident-type-btn span:last-child {
+  font-family: var(--font-ui);
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--ink);
+  text-align: center;
+  line-height: 1.2;
+}
+
+/* Campo de descripción */
+.sheet-textarea {
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  padding: 0.85rem 1rem;
+  width: 100%;
+  min-height: 90px;
+  resize: none;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.sheet-textarea:focus {
+  border-color: var(--navy);
+  box-shadow: 0 0 0 3px rgba(27, 58, 75, 0.1);
+  background: var(--white);
+}
+
+/* Fila de ubicación */
+.sheet-location-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.65rem 0.9rem;
+  background: var(--surface);
+  border-radius: 10px;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+.sheet-location-row svg { flex-shrink: 0; color: var(--navy); }
+
+/* Botón publicar */
+.sheet-submit-btn {
+  width: 100%;
+  background: var(--alert);
+  color: var(--white);
+  font-family: var(--font-ui);
+  font-size: 0.95rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 14px;
+  padding: 0.95rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition:
+    background 0.15s,
+    transform 0.18s var(--transition-micro),
+    box-shadow 0.15s;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.sheet-submit-btn:hover  { background: #d13744; box-shadow: 0 4px 16px rgba(232,72,85,0.35); }
+.sheet-submit-btn:active { transform: scale(0.96); }
+.sheet-submit-btn:disabled { opacity: 0.55; cursor: not-allowed; transform: none; box-shadow: none; }
+
+
+/* ================================================================
+   2. MARCADORES DE LEAFLET por tipo de incidente
+   ================================================================ */
+
+/* Pin base */
+.sm-pin {
+  position: relative;
+  width: 36px;
+  height: 36px;
+}
+
+.sm-pin-body {
+  width: 36px;
+  height: 36px;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  border: 2.5px solid rgba(255,255,255, 0.95);
+  box-shadow: var(--shadow-pin);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s var(--transition-micro);
+}
+
+.sm-pin:hover .sm-pin-body {
+  transform: rotate(-45deg) scale(1.15);
+}
+
+.sm-pin-emoji {
+  transform: rotate(45deg);
+  font-size: 15px;
+  line-height: 1;
+  display: block;
+}
+
+/* Colores de pin por tipo */
+.sm-pin-body.fire      { background: #E84855; }
+.sm-pin-body.landslide { background: #F2A65A; }
+.sm-pin-body.flood     { background: #3BB6D8; }
+.sm-pin-body.accident  { background: #6B8F71; }
+.sm-pin-body.pothole   { background: #9C88FF; }
+.sm-pin-body.other     { background: #697A84; }
+
+/* Pulso para reportes recientes (últimos 10 min) */
+.sm-pin.is-fresh::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  opacity: 0;
+  animation: pin-pulse 2s ease-out infinite;
+}
+
+.sm-pin.is-fresh.fire      { color: #E84855; }
+.sm-pin.is-fresh.landslide { color: #F2A65A; }
+.sm-pin.is-fresh.flood     { color: #3BB6D8; }
+
+@keyframes pin-pulse {
+  0%   { opacity: 0.6; transform: scale(1); }
+  100% { opacity: 0;   transform: scale(2.2); }
+}
+
+
+/* ================================================================
+   3. CLUSTER PERSONALIZADO
+   ================================================================ */
+
+.sm-cluster {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: var(--navy);
+  border: 3px solid rgba(255,255,255,0.9);
+  box-shadow: 0 2px 10px rgba(27,58,75,0.35);
+  font-family: var(--font-ui);
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--white);
+  transition: transform 0.2s var(--transition-micro);
+  cursor: pointer;
+}
+
+.sm-cluster:hover { transform: scale(1.12); }
+
+/* Cluster grande */
+.sm-cluster.lg {
+  width: 52px;
+  height: 52px;
+  font-size: 0.9rem;
+  background: var(--alert);
+}
+
+
+/* ================================================================
+   4. SKELETON LOADERS
+   ================================================================ */
+
+@keyframes shimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position:  400px 0; }
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--surface-2) 25%,
+    var(--surface-3) 50%,
+    var(--surface-2) 75%
+  );
+  background-size: 800px 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+  border-radius: 8px;
+}
+
+/* Skeleton de tarjeta de reporte */
+.skeleton-card {
+  padding: 0.9rem 1.1rem;
+  border-bottom: 1px solid var(--surface-2);
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+}
+
+.skeleton-dot  { width: 10px; height: 10px; border-radius: 50%; margin-top: 4px; flex-shrink: 0; }
+.skeleton-line { height: 12px; border-radius: 6px; }
+.skeleton-body { flex: 1; display: flex; flex-direction: column; gap: 0.45rem; }
+
+.skeleton-title { width: 70%; }
+.skeleton-desc  { width: 90%; }
+.skeleton-meta  { width: 45%; height: 10px; }
+
+/* Skeleton del mapa completo */
+.map-skeleton {
+  position: absolute;
+  inset: 0;
+  background: #e8e3d8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  transition: opacity 0.4s ease;
+}
+
+.map-skeleton.is-hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.map-skeleton-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.map-skeleton-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: rgba(27,58,75,0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: map-spin 1.6s linear infinite;
+}
+
+@keyframes map-spin {
+  to { transform: rotate(360deg); }
+}
+
+.map-skeleton-label {
+  font-family: var(--font-ui);
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+
+/* ================================================================
+   5. MICROINTERACCIONES
+   ================================================================ */
+
+/* FAB con efecto de rebote al aparecer */
+.fab {
+  animation: fab-enter 0.5s var(--transition-micro) both;
+}
+
+@keyframes fab-enter {
+  from { transform: translateX(-50%) scale(0.6); opacity: 0; }
+  to   { transform: translateX(-50%) scale(1);   opacity: 1; }
+}
+
+/* FAB pulsante cuando no hay reportes propios */
+.fab.pulse-attention {
+  animation: fab-attention 2.5s ease-in-out infinite;
+}
+
+@keyframes fab-attention {
+  0%, 100% { box-shadow: 0 4px 20px rgba(232,72,85,0.4); }
+  50%       { box-shadow: 0 4px 32px rgba(232,72,85,0.7); }
+}
+
+/* Filter chips — entrada escalonada */
+.filter-chip {
+  animation: chip-enter 0.3s var(--transition-micro) both;
+}
+
+.filter-chip:nth-child(1) { animation-delay: 0.05s; }
+.filter-chip:nth-child(2) { animation-delay: 0.10s; }
+.filter-chip:nth-child(3) { animation-delay: 0.15s; }
+.filter-chip:nth-child(4) { animation-delay: 0.20s; }
+.filter-chip:nth-child(5) { animation-delay: 0.25s; }
+
+@keyframes chip-enter {
+  from { transform: translateY(6px); opacity: 0; }
+  to   { transform: translateY(0);   opacity: 1; }
+}
+
+/* Tarjeta de reporte — entrada */
+.report-card {
+  animation: card-enter 0.25s ease both;
+}
+
+@keyframes card-enter {
+  from { transform: translateX(-8px); opacity: 0; }
+  to   { transform: translateX(0);    opacity: 1; }
+}
+
+/* Reporte nuevo — highlight temporal */
+@keyframes card-highlight {
+  0%   { background: rgba(232, 72, 85, 0.08); }
+  100% { background: transparent; }
+}
+
+.report-card.is-new {
+  animation: card-enter 0.25s ease both, card-highlight 1.5s ease 0.25s both;
+}
+
+/* Botones — ripple táctil */
+.ripple-btn {
+  position: relative;
+  overflow: hidden;
+}
+
+.ripple-btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(255,255,255,0.2);
+  border-radius: inherit;
+  transform: scale(0);
+  opacity: 1;
+  transition: transform 0.4s ease, opacity 0.4s ease;
+}
+
+.ripple-btn:active::after {
+  transform: scale(2);
+  opacity: 0;
+}
+
+/* Toast de confirmación */
+.toast-notification {
+  position: fixed;
+  bottom: 5.5rem;
+  left: 50%;
+  transform: translateX(-50%) translateY(0);
+  background: var(--ink);
+  color: var(--white);
+  font-family: var(--font-ui);
+  font-size: 0.82rem;
+  font-weight: 500;
+  padding: 0.65rem 1.1rem;
+  border-radius: 999px;
+  white-space: nowrap;
+  z-index: 1200;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+  animation: toast-in 0.35s var(--transition-micro) both;
+}
+
+.toast-notification.is-leaving {
+  animation: toast-out 0.3s ease both;
+}
+
+.toast-notification .toast-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--safe);
+  flex-shrink: 0;
+}
+
+@keyframes toast-in {
+  from { transform: translateX(-50%) translateY(12px); opacity: 0; }
+  to   { transform: translateX(-50%) translateY(0);    opacity: 1; }
+}
+
+@keyframes toast-out {
+  from { transform: translateX(-50%) translateY(0);    opacity: 1; }
+  to   { transform: translateX(-50%) translateY(12px); opacity: 0; }
+}
+
+/* Sidebar — transición suave en móvil */
+.sidebar {
+  transition: transform 0.28s var(--transition-sheet);
+}
+
+
+/* ================================================================
+   6. POPUP DEL MAPA — más moderno
+   ================================================================ */
+
+.leaflet-popup-content-wrapper {
+  border-radius: 16px !important;
+  padding: 0 !important;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(27,58,75,0.18) !important;
+  border: 1px solid rgba(27,58,75,0.08) !important;
+}
+
+.leaflet-popup-tip-container { display: none; }
+
+.incident-popup {
+  padding: 1rem 1.1rem 1rem;
+  min-width: 200px;
+  max-width: 260px;
+}
+
+.popup-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.popup-badge {
+  font-family: var(--font-ui);
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+}
+
+.popup-badge.fire      { background: rgba(232,72,85,0.1);  color: #E84855; }
+.popup-badge.landslide { background: rgba(242,166,90,0.1); color: #d4832a; }
+.popup-badge.flood     { background: rgba(59,182,216,0.1); color: #2a90b8; }
+.popup-badge.accident  { background: rgba(107,143,113,0.1);color: #4a7a51; }
+.popup-badge.pothole   { background: rgba(156,136,255,0.1);color: #7c5fd4; }
+
+.popup-time {
+  margin-left: auto;
+  font-size: 0.7rem;
+  color: var(--muted);
+}
+
+.popup-title {
+  font-family: var(--font-ui);
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 0.3rem;
+  line-height: 1.3;
+}
+
+.popup-desc {
+  font-size: 0.78rem;
+  color: var(--ink-soft);
+  line-height: 1.5;
+}
+
+
+/* ================================================================
+   7. RESPONSIVE — ajustes específicos móvil
+   ================================================================ */
+
+@media (max-width: 480px) {
+  .bottom-sheet { border-radius: 24px 24px 0 0; }
+
+  .incident-type-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.4rem;
+  }
+
+  .incident-type-btn { padding: 0.75rem 0.3rem 0.6rem; border-radius: 12px; }
+  .incident-type-btn .type-icon { width: 32px; height: 32px; font-size: 1rem; }
+  .incident-type-btn span:last-child { font-size: 0.65rem; }
+}
+
+@media (min-width: 768px) and (min-height: 500px) {
+  /* En computadoras y tablets, el panel de reporte se convierte en una tarjeta flotante centrada o lateral limpia */
+  .bottom-sheet {
+    left: 50% !important;
+    right: auto !important;
+    bottom: 2rem !important;
+    width: 440px !important;
+    border-radius: 20px !important;
+    max-height: 85vh !important;
+    transform: translateX(-50%) translateY(120%) !important;
+    box-shadow: 0 12px 40px rgba(27, 58, 75, 0.25) !important;
+  }
+
+  .bottom-sheet.is-open {
+    transform: translateX(-50%) translateY(0) !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+
+/* ================================================================
+   8. ANIMACIÓN DE ENTRADA PARA UN REPORTE RECIÉN PUBLICADO
+   ================================================================ */
+.sm-pin.is-new {
+  animation: pin-drop 0.7s var(--transition-micro) both;
+}
+
+@keyframes pin-drop {
+  0%   { transform: translateY(-48px) scale(0.6); opacity: 0; }
+  60%  { transform: translateY(0)     scale(1.1); opacity: 1; }
+  100% { transform: translateY(0)     scale(1);   opacity: 1; }
+}
+
+
+/* ================================================================
+   9. CERRAR SESIÓN (topbar)
+   ================================================================ */
+.logout-form { margin: 0; display: inline-flex; }
+
+.btn-topbar-logout {
+  font-family: var(--font-ui);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: var(--radius-sm, 8px);
+  padding: 0.4rem 0.85rem;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.btn-topbar-logout:hover { background: rgba(255, 255, 255, 0.22); }
+
+@media (max-width: 480px) {
+  .topbar-right .mode-tag { max-width: 96px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+}
+
+
+/* ================================================================
+   10. BUSCADOR DE DESTINOS (estilo Waze)
+   ================================================================ */
+.map-search {
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(420px, calc(100% - 150px));
+  z-index: 1000;               /* por encima de los controles de Leaflet */
+}
+
+.map-search-box {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #fff;
+  border-radius: 999px;
+  padding: 0 0.5rem 0 0.9rem;
+  box-shadow: 0 2px 12px rgba(27, 58, 75, 0.22);
+  border: 1px solid rgba(27, 58, 75, 0.08);
+}
+.map-search-box:focus-within { box-shadow: 0 0 0 2px rgba(232, 72, 85, 0.45), 0 2px 12px rgba(27, 58, 75, 0.22); }
+
+.map-search-icon { color: #697A84; flex-shrink: 0; display: flex; }
+
+.map-search input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-family: var(--font-ui, inherit);
+  font-size: 16px;             /* 16px evita el zoom automático de iOS al enfocar */
+  padding: 0.7rem 0;
+  color: #1B3A4B;
+}
+.map-search input::placeholder { color: #8a97a0; }
+
+.map-search-clear {
+  border: none;
+  background: var(--surface-2);
+  color: #4A5568;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+.map-search-results {
+  list-style: none;
+  margin: 6px 0 0;
+  padding: 6px;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 8px 28px rgba(27, 58, 75, 0.25);
+  max-height: 55vh;
+  overflow-y: auto;
+}
+
+.search-item {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.6rem 0.7rem;
+  border-radius: 10px;
+  cursor: pointer;
+}
+.search-item:hover, .search-item.is-active { background: var(--surface); }
+.search-item.is-disabled { cursor: default; opacity: 0.7; }
+.search-item-icon { font-size: 1.1rem; flex-shrink: 0; }
+.search-item-text { display: flex; flex-direction: column; min-width: 0; }
+.search-item-text strong { font-size: 0.88rem; color: #1B3A4B; font-weight: 600; }
+.search-item-text small { font-size: 0.75rem; color: #697A84; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* Chip de zona activa en el sidebar */
+.zone-chip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin: 0.5rem 0.75rem 0;
+  padding: 0.45rem 0.45rem 0.45rem 0.75rem;
+  background: rgba(232, 72, 85, 0.08);
+  border: 1px solid rgba(232, 72, 85, 0.25);
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #b53540;
+}
+.zone-chip-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.zone-chip-clear {
+  border: none;
+  background: rgba(232, 72, 85, 0.15);
+  color: #b53540;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 11px;
+  flex-shrink: 0;
+}
+
+
+/* ================================================================
+   11. EVIDENCIA FOTOGRÁFICA (bottom sheet)
+   ================================================================ */
+.photo-field { padding: 0 0 0.75rem; }
+.photo-field[hidden] { display: none !important; }
+
+.photo-field-label {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+  margin-bottom: 0.4rem;
+}
+.photo-field-label small { font-weight: 400; color: #8a97a0; }
+
+.photo-picker { display: flex; align-items: center; gap: 0.75rem; }
+
+.photo-pick-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.6rem 0.9rem;
+  background: var(--surface);
+  border: 1.5px dashed var(--surface-3);
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+.photo-pick-btn:hover { background: var(--surface-2); border-color: #c9c4ba; }
+
+.photo-preview { position: relative; width: 64px; height: 64px; flex-shrink: 0; }
+.photo-preview[hidden] { display: none !important; }
+.photo-preview img { width: 100%; height: 100%; object-fit: cover; border-radius: 12px; display: block; }
+.photo-remove {
+  position: absolute;
+  top: -6px; right: -6px;
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  background: #1B3A4B;
+  color: #fff;
+  font-size: 10px;
+  cursor: pointer;
+  line-height: 1;
+}
+
+
+/* ================================================================
+   12. POPUP: FOTO + VALIDACIÓN COMUNITARIA
+   ================================================================ */
+.popup-photo { display: block; margin: 0.5rem 0; }
+.popup-photo img {
+  width: 100%;
+  max-height: 150px;
+  object-fit: cover;
+  border-radius: 10px;
+  display: block;
+  background: var(--surface-2);
+}
+
+.popup-votes {
+  margin-top: 0.7rem;
+  padding-top: 0.6rem;
+  border-top: 1px solid var(--surface-2);
+}
+.popup-votes.is-busy { opacity: 0.65; pointer-events: none; }
+
+.popup-votes-stats {
+  display: flex;
+  gap: 0.75rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+.popup-votes-stats .stat-yes { color: #4a7a51; }
+.popup-votes-stats .stat-no  { color: #b53540; }
+
+.popup-vote-actions { display: flex; gap: 0.5rem; }
+
+.vote-btn {
+  flex: 1;
+  border: none;
+  border-radius: 10px;
+  padding: 0.55rem 0.4rem;
+  font-family: inherit;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.12s, filter 0.15s;
+}
+.vote-btn:active { transform: scale(0.96); }
+.vote-btn:disabled { cursor: wait; }
+.vote-btn--yes { background: rgba(107, 143, 113, 0.16); color: #3f6b46; }
+.vote-btn--no  { background: rgba(232, 72, 85, 0.12);  color: #b53540; }
+.vote-btn:hover { filter: brightness(0.96); }
+
+.popup-vote-hint { margin: 0.45rem 0 0; font-size: 0.7rem; color: #8a97a0; }
+.popup-voted { margin: 0; font-size: 0.78rem; font-weight: 600; color: var(--ink-soft); }
+.popup-vote-login {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #E84855;
+  text-decoration: none;
+}
+.popup-vote-login:hover { text-decoration: underline; }
+
+/* ================================================================
+   13. MODO OSCURO REAL (Leaflet) Y GAMIFICACIÓN
+   ================================================================ */
+
+/* Estilos Píldora Gamificación (Reemplaza el diseño anterior) */
+.gamification-pill {
+  display: inline-flex;
+  align-items: center;
+  background: linear-gradient(135deg, #1B3A4B, #3BB6D8);
+  color: white;
+  padding: 4px 12px;
+  border-radius: 50px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+.gamification-pill:hover { transform: scale(1.05); }
+.gamification-pill .badge-icon { margin-right: 6px; font-size: 1rem; }
+.gamification-pill .badge-points {
+  background: rgba(255,255,255,0.2);
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+}
+
+/* Botón Dark Mode */
+.btn-theme-toggle {
+  background: transparent;
+  border: 1px solid rgba(27, 58, 75, 0.2);
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  transition: all 0.3s;
+}
+.btn-theme-toggle:hover { background: rgba(27, 58, 75, 0.05); }
+
+/* Tema Oscuro Global */
+body.dark-mode {
+  background-color: #111c22;
+  color: #e2e8f0;
+}
+body.dark-mode .topbar,
+body.dark-mode .sidebar,
+body.dark-mode .bottom-sheet,
+body.dark-mode .incident-popup,
+body.dark-mode .map-search-results,
+body.dark-mode .map-search-box {
+  background-color: #1a2730;
+  color: #f7f5f1;
+  border-color: #2c3e4c;
+}
+body.dark-mode .map-search input { color: #f7f5f1; }
+body.dark-mode .popup-title { color: #fff; }
+
+/* Magia Leaflet: Invierte el mapa pero no los marcadores ni popups */
+body.dark-mode .leaflet-layer,
+body.dark-mode .leaflet-control-zoom-in,
+body.dark-mode .leaflet-control-zoom-out,
+body.dark-mode .leaflet-control-attribution {
+  filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
+}

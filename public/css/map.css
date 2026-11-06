@@ -727,25 +727,102 @@ html, body { height: 100%; font-family: var(--font-body); -webkit-font-smoothing
 }
 
 
-@media (max-width: 768px) {
-  .sidebar {
-    position: fixed;
-    top: var(--topbar-h);
-    left: 0;
-    bottom: 0;
-    transform: translateX(-100%);
-    transition: transform 0.25s ease;
-    z-index: 200;
-  }
+/* --- Corrección definitiva para Móviles (Vertical y Horizontal) --- */
 
-  .sidebar.is-open { transform: translateX(0); }
-  .sidebar-toggle { display: flex; }
+/* 1. Teléfonos en VERTICAL (Parados) */
+@media (max-width: 768px) and (orientation: portrait) {
+    .app-layout {
+        display: flex !important;
+        flex-direction: column !important;
+        height: calc(100vh - 60px) !important; /* Ajusta el alto descontando la barra superior */
+        overflow: hidden !important;
+    }
 
-  .topbar-location { display: none; }
+    /* El mapa toma la mitad de arriba */
+    .map-container, #map {
+        width: 100% !important;
+        height: 50vh !important;
+        flex: none !important;
+        position: relative !important;
+        z-index: 1 !important;
+    }
 
-  .fab { bottom: 2rem; }
+    /* La barra de reportes toma la mitad de abajo */
+    .sidebar {
+        width: 100% !important;
+        height: 50vh !important;
+        max-height: none !important;
+        border-right: none !important;
+        border-top: 2px solid #e5e7eb !important;
+        order: 2 !important; /* Asegura que vaya abajo del mapa */
+        overflow-y: auto !important; /* Habilita el scroll para leer los reportes */
+        padding: 1rem !important;
+        background: var(--white, #ffffff) !important;
+        z-index: 2 !important;
+        display: block !important; /* Fuerza a que aparezca */
+    }
+
+    /* El botón flotante se coloca justo en medio, sobre el mapa y antes de la barra */
+    .report-floating-btn {
+        bottom: 52vh !important; 
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+        width: 85% !important;
+        max-width: 300px !important;
+        z-index: 1000 !important;
+    }
+
+    /* Filtros horizontales deslizables */
+    .filters-wrap {
+        display: flex !important;
+        flex-wrap: nowrap !important;
+        overflow-x: auto !important;
+        padding-bottom: 0.5rem !important;
+        gap: 0.5rem !important;
+        -webkit-overflow-scrolling: touch !important;
+    }
+    .filters-wrap::-webkit-scrollbar {
+        display: none !important;
+    }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  * { transition: none !important; animation: none !important; }
+/* 2. Teléfonos en HORIZONTAL (Acostados) */
+@media (max-width: 900px) and (orientation: landscape) {
+    .app-layout {
+        display: flex !important;
+        flex-direction: row !important; /* Lado a lado */
+        height: calc(100vh - 60px) !important;
+        overflow: hidden !important;
+    }
+    
+    /* La barra lateral se hace más delgada (35%) para dejar ver el mapa */
+    .sidebar {
+        width: 35% !important;
+        min-width: 250px !important;
+        height: 100% !important;
+        border-right: 1px solid #e5e7eb !important;
+        overflow-y: auto !important;
+        display: block !important;
+    }
+
+    /* El mapa toma el resto del espacio (65%) */
+    .map-container, #map {
+        width: 65% !important;
+        height: 100% !important;
+        flex-grow: 1 !important;
+    }
+
+    /* El botón flotante se centra solo en la parte del mapa */
+   .report-floating-btn {
+        bottom: 1.5rem !important;
+        left: 67.5% !important;
+        transform: translateX(-50%) !important;
+        width: auto !important;
+        padding: 0.8rem 1.5rem !important;
+    }
+}
+
+/* Respeta el atributo hidden aunque el elemento tenga display propio */
+[hidden] {
+  display: none !important;
 }
