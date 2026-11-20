@@ -11,6 +11,10 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.Default.min.css"/>
 <link rel="stylesheet" href="{{ secure_asset('css/map.css') }}">
 <link rel="stylesheet" href="{{ secure_asset('css/mobile-ux.css') }}">
+{{-- Modo oscuro real (filtro de inversión de teselas) — se activa con [data-theme="dark"] --}}
+<link rel="stylesheet" href="{{ secure_asset('css/dark-mode.css') }}">
+{{-- Capas nuevas: enrutamiento, mapa de calor, zonas de riesgo y geocercas --}}
+<link rel="stylesheet" href="{{ secure_asset('css/map-features.css') }}">
 <meta name="csrf-token" content="{{ csrf_token() }}">
 <meta name="theme-color" content="#1B3A4B">
 {{-- El tema se aplica en el <head> (antes de pintar) para evitar un destello blanco de noche --}}
@@ -134,12 +138,14 @@
           <path d="M12 2v3M12 19v3M2 12h3M19 12h3"/>
         </svg>
       </button>
+      {{-- Capas de analítica y geocercas --}}
+      <button class="map-ctrl-btn" id="layerHeat" title="Mapa de calor de siniestralidad" aria-pressed="false">🔥</button>
+      <button class="map-ctrl-btn" id="layerRisk" title="Zonas predictivas de anegamiento" aria-pressed="false">💧</button>
+      <button class="map-ctrl-btn" id="layerPlaces" title="Mis lugares vigilados (geocercas)" aria-pressed="false">🏠</button>
+      {{-- Simulador de GPS (solo para desarrollo) --}}
+      <button class="map-ctrl-btn" id="btn-simulate-gps" title="Simular GPS (dev)">📍</button>
     </div>
     <div class="map-toast" id="mapToast" hidden><span id="toastMsg"></span></div>
-    <!-- Botón Simulador GPS (Solo para desarrollo) -->
-    <button id="btn-simulate-gps" style="position: absolute; bottom: 85px; left: 15px; z-index: 1000; padding: 10px 15px; background: #E84855; color: white; border: none; border-radius: 8px; font-weight: bold; box-shadow: 0 4px 10px rgba(0,0,0,0.3); cursor: pointer;">
-      📍 Simular GPS
-    </button>
   </main>
 </div>
 
@@ -158,7 +164,25 @@
     isGuest: @json(!auth()->check()),
     loginUrl: @json(route('login', [], false)),
     voteRadius: @json((int) config('safemap.vote_radius_m')),
-    api: { incidents: '/api/incidents' }
+    api: { incidents: '/api/incidents' },
+    // Analítica histórica y predictiva (Ideas 3 y 6)
+    analytics: {
+      heatmap: '/api/analytics/heatmap',
+      risk:    '/api/analytics/risk-zones'
+    },
+    // Enrutamiento Waze-style (Idea 1) — OSRM público, gratuito
+    routing: {
+      osrm:         @json(config('safemap.routing.osrm_url')),
+      alternatives: @json((int) config('safemap.routing.alternatives')),
+      riskRadius:   @json((int) config('safemap.routing.risk_radius_m')),
+      riskWeights:  @json(config('safemap.routing.risk_weights'))
+    },
+    // Geocercas y alertas vecinales (Ideas 4 y 5)
+    geofence: {
+      radius:     @json((int) config('safemap.geofence.default_radius_m')),
+      highImpact: @json(config('safemap.geofence.high_impact_types')),
+      cooldown:   @json((int) config('safemap.geofence.alert_cooldown_s'))
+    }
   };
 </script>
 {{-- 1. Leaflet y plugins --}}
@@ -170,9 +194,17 @@
 <script src="{{ secure_asset('js/map.js') }}"></script>
 {{-- 4. Buscador de destinos (usa window.SafeMap de map.js) --}}
 <script src="{{ secure_asset('js/map-search.js') }}"></script>
-{{-- 5. Alertas de proximidad (geofencing) --}}
+{{-- 5. Enrutamiento dual Rápida / Segura (Idea 1) --}}
+<script src="{{ secure_asset('js/map-routing.js') }}"></script>
+{{-- 6. Mapa de calor de siniestralidad (Idea 6) --}}
+<script src="{{ secure_asset('js/map-heatmap.js') }}"></script>
+{{-- 7. Zonas predictivas de anegamiento por temporada (Idea 3) --}}
+<script src="{{ secure_asset('js/map-risk.js') }}"></script>
+{{-- 8. Geocercas y alertas vecinales por proximidad (Ideas 4 y 5) --}}
 <script src="{{ secure_asset('js/map-geofence.js') }}"></script>
-{{-- 6. Reputación y gamificación (solo con sesión) --}}
+{{-- 9. Reputación y gamificación (solo con sesión) --}}
+    <!-- Cargamos los scripts funcionales del mapa -->
+
 @auth
 <script src="{{ secure_asset('js/map-reputation.js') }}"></script>
 @endauth
