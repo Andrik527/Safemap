@@ -112,7 +112,7 @@
     });
   }
 
-  function select(item) {
+ function select(item) {
     const lat  = parseFloat(item.lat);
     const lng  = parseFloat(item.lon);
     const name = item.display_name.split(',')[0].trim();
@@ -123,6 +123,20 @@
 
     window.map.setView([lat, lng], 16, { animate: true });
     dropPin(lat, lng, name);
+
+   // LLAMADA ULTRA-SEGURA CON REINTENTO AUTOMÁTico
+  function dispararRuta(lat, lng, name, intentos = 0) {
+      if (window.SafeMapRouting && typeof window.SafeMapRouting.setDestination === 'function') {
+          window.SafeMapRouting.setDestination(lat, lng, name);
+      } else if (intentos < 5) {
+          // Si el script de routing aún se está cargando, reintenta en 100 milisegundos
+          setTimeout(() => dispararRuta(lat, lng, name, intentos + 1), 100);
+      } else {
+          document.dispatchEvent(new CustomEvent('safemap:destination', { detail: { lat, lng, name } }));
+      }
+  }
+
+  dispararRuta(lat, lng, name);
   }
 
   /* ── búsqueda en Nominatim ── */
@@ -194,6 +208,7 @@
       clearBtn.hidden = true;
       showResults(false);
       if (pinMarker) { window.map.removeLayer(pinMarker); pinMarker = null; }
+      if (window.SafeMapRouting) window.SafeMapRouting.clear();
       input.focus();
     });
   }
