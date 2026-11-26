@@ -725,7 +725,7 @@
   top: 12px;
   left: 50%;
   transform: translateX(-50%);
-  width: min(420px, calc(100% - 150px));
+  width: min(420px, calc(100% - 32px));
   z-index: 1000;               /* por encima de los controles de Leaflet */
 }
 
@@ -779,20 +779,21 @@
   overflow-y: auto;
 }
 
-.search-item {
+.map-search-result {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 0.65rem;
   padding: 0.6rem 0.7rem;
   border-radius: 10px;
   cursor: pointer;
+  transition: background 0.12s;
 }
-.search-item:hover, .search-item.is-active { background: var(--surface); }
-.search-item.is-disabled { cursor: default; opacity: 0.7; }
-.search-item-icon { font-size: 1.1rem; flex-shrink: 0; }
-.search-item-text { display: flex; flex-direction: column; min-width: 0; }
-.search-item-text strong { font-size: 0.88rem; color: #1B3A4B; font-weight: 600; }
-.search-item-text small { font-size: 0.75rem; color: #697A84; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.map-search-result:hover, .map-search-result.is-active { background: var(--surface-2); }
+.sr-icon { flex-shrink: 0; font-size: 0.9rem; margin-top: 1px; }
+.sr-body { display: flex; flex-direction: column; gap: 0.1rem; min-width: 0; }
+.sr-name { font-family: var(--font-ui, sans-serif); font-size: 0.82rem; font-weight: 600; color: #1B3A4B; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sr-sub { font-size: 0.72rem; color: #697A84; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.map-search-empty { padding: 0.75rem 1rem; font-size: 0.8rem; color: #697A84; }
 
 /* Chip de zona activa en el sidebar */
 .zone-chip {
@@ -933,7 +934,10 @@
 .popup-vote-login:hover { text-decoration: underline; }
 
 /* ================================================================
-   13. MODO OSCURO REAL (Leaflet) Y GAMIFICACIÓN
+   13. GAMIFICACIÓN Y CONTROLES DE TEMA
+   El modo oscuro real (incluido el filtro de teselas de Leaflet)
+   vive en public/css/dark-mode.css y se activa con [data-theme="dark"]
+   en <html> desde map-theme.js.
    ================================================================ */
 
 /* Estilos Píldora Gamificación (Reemplaza el diseño anterior) */
@@ -959,10 +963,10 @@
   font-size: 0.75rem;
 }
 
-/* Botón Dark Mode */
+/* Botón Dark Mode (vive en la topbar, siempre oscura) */
 .btn-theme-toggle {
   background: transparent;
-  border: 1px solid rgba(27, 58, 75, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.28);
   border-radius: 50%;
   width: 32px;
   height: 32px;
@@ -971,32 +975,7 @@
   align-items: center;
   justify-content: center;
   font-size: 1rem;
+  line-height: 1;
   transition: all 0.3s;
 }
-.btn-theme-toggle:hover { background: rgba(27, 58, 75, 0.05); }
-
-/* Tema Oscuro Global */
-body.dark-mode {
-  background-color: #111c22;
-  color: #e2e8f0;
-}
-body.dark-mode .topbar,
-body.dark-mode .sidebar,
-body.dark-mode .bottom-sheet,
-body.dark-mode .incident-popup,
-body.dark-mode .map-search-results,
-body.dark-mode .map-search-box {
-  background-color: #1a2730;
-  color: #f7f5f1;
-  border-color: #2c3e4c;
-}
-body.dark-mode .map-search input { color: #f7f5f1; }
-body.dark-mode .popup-title { color: #fff; }
-
-/* Magia Leaflet: Invierte el mapa pero no los marcadores ni popups */
-body.dark-mode .leaflet-layer,
-body.dark-mode .leaflet-control-zoom-in,
-body.dark-mode .leaflet-control-zoom-out,
-body.dark-mode .leaflet-control-attribution {
-  filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
-}
+.btn-theme-toggle:hover { background: rgba(255, 255, 255, 0.12); }
