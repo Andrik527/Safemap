@@ -70,11 +70,30 @@
   });
   window.map = map;
 
-  // Capa base primero, para que el mapa se vea aunque algo más falle
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-    maxZoom: 19,
-  }).addTo(map);
+  // CARTO dark tiles se activan con clave; sin ella se usa OSM + filtro oscuro CSS.
+  const cartoKey = window.SAFEMAP && window.SAFEMAP.mapTiles && window.SAFEMAP.mapTiles.cartoApiKey;
+  let baseLayer = null;
+  function setBaseLayer(theme) {
+    const useCartoDark = theme === 'dark' && !!cartoKey;
+    if (baseLayer) map.removeLayer(baseLayer);
+    if (useCartoDark) {
+      const keyQuery = `?api_key=${encodeURIComponent(cartoKey)}`;
+      baseLayer = L.tileLayer(`https://basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}{r}.png${keyQuery}`, {
+        attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> © <a href="https://carto.com/">CARTO</a>',
+        maxZoom: 20,
+      });
+      document.documentElement.dataset.mapTiles = 'carto-dark';
+    } else {
+      baseLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+        maxZoom: 19,
+      });
+      delete document.documentElement.dataset.mapTiles;
+    }
+    baseLayer.addTo(map);
+  }
+  setBaseLayer(window.SafeMapTheme ? window.SafeMapTheme.resolved() : 'light');
+  document.addEventListener('safemap:theme-changed', event => setBaseLayer(event.detail.theme));
 
   // Clusters (opcional): si algo falla, se usan marcadores normales
   let clusterGroup = null;
@@ -110,13 +129,21 @@
     return !activeZone || distanceM(r.lat, r.lng, activeZone.lat, activeZone.lng) <= activeZone.radius;
   }
 
-  // Un reporte vencido (sin confirmaciones a tiempo) deja de mostrarse aunque la página siga abierta
-  function isLive(r) {
-    return !r.expires_at || new Date(r.expires_at).getTime() > Date.now();
+  // Mantén el mismo ciclo de vida para lista, mapa, rutas y alertas.
+  function isLive(r, now = Date.now()) {
+    if (!r || (r.status && r.status !== 'active')) return false;
+    if (!r.expires_at) return true;
+    const expiresAt = Date.parse(r.expires_at);
+    return Number.isFinite(expiresAt) && expiresAt > now;
+  }
+
+  function activeReports() {
+    const now = Date.now();
+    return reports.filter(report => isLive(report, now));
   }
 
   function visibleReports() {
-    return reports.filter(r => isLive(r) && (activeFilter === 'all' || r.type === activeFilter) && inZone(r));
+    return activeReports().filter(r => (activeFilter === 'all' || r.type === activeFilter) && inZone(r));
   }
 
   function renderMarkers() {
@@ -339,8 +366,8 @@
         return;
       }
 
-      if (json.resolved) {
-        // La comunidad cerró el reporte: sale del mapa y de la lista
+      if (json.resolved || !isLive(json.data)) {
+        // Resuelto, vencido o inválido: ya no participa en el mapa ni en rutas.
         reports = reports.filter(r => r.id !== id);
         map.closePopup();
         renderMarkers();
@@ -380,10 +407,14 @@
 
   /** Inserta un reporte recién creado (respuesta del servidor) sin recargar. */
   function addReport(report) {
+    if (!isLive(report)) return;
     if (activeFilter !== 'all' && activeFilter !== report.type) {
       activeFilter = 'all';
-      document.querySelectorAll('.filter-chip').forEach(c =>
-        c.classList.toggle('filter-chip--active', c.dataset.filter === 'all'));
+      document.querySelectorAll('.filter-chip').forEach(c => {
+        const selected = c.dataset.filter === 'all';
+        c.classList.toggle('filter-chip--active', selected);
+        c.setAttribute('aria-pressed', String(selected));
+      });
     }
     if (activeZone && !inZone(report)) setZone(null);
 
@@ -409,7 +440,7 @@
       });
       if (!res.ok) throw new Error('HTTP ' + res.status);
       const json = await res.json();
-      reports = json.data || [];
+      reports = Array.isArray(json.data) ? json.data.filter(isLive) : [];
       renderMarkers();
       renderList();
     } catch (err) {
@@ -428,7 +459,7 @@
     reload: loadReports,
     setZone,
     getZone: () => activeZone,
-    getReports: () => reports,        // lo usa el geofencing
+    getReports: activeReports,        // reportes vigentes para rutas y alertas
     focusReport: selectReport,        // lo usa la alerta "Ver"
   };
 
@@ -436,8 +467,12 @@
 
   document.querySelectorAll('.filter-chip').forEach(chip => {
     chip.addEventListener('click', () => {
-      document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('filter-chip--active'));
+      document.querySelectorAll('.filter-chip').forEach(c => {
+        c.classList.remove('filter-chip--active');
+        c.setAttribute('aria-pressed', 'false');
+      });
       chip.classList.add('filter-chip--active');
+      chip.setAttribute('aria-pressed', 'true');
       activeFilter = chip.dataset.filter;
       renderMarkers();
       renderList();
