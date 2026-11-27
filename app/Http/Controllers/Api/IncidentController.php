@@ -30,7 +30,8 @@ class IncidentController extends Controller
 
         $this->lifecycle->throttledSweep();
 
-        $query = Incident::query()->active()->latest();
+        // 'user' se precarga para calcular la confianza del autor sin N+1 (Idea 5)
+        $query = Incident::query()->active()->with('user')->latest();
 
         // Si hay sesión, adjunta SOLO el voto de este usuario (para saber si ya votó)
         if (auth()->check()) {
@@ -72,6 +73,9 @@ class IncidentController extends Controller
             'status'      => IncidentStatus::Active->value,
             'expires_at'  => now()->addMinutes((int) config('safemap.unverified_ttl_minutes')),
         ]);
+
+        // Precarga el autor para exponer su confianza en el recurso (Idea 5)
+        $incident->setRelation('user', auth()->user());
 
         return (new IncidentResource($incident))
             ->response()

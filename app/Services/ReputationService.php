@@ -155,6 +155,65 @@ class ReputationService
         return $current + ['next' => $next, 'progress' => $progress];
     }
 
+    /**
+     * Peso del voto según la reputación/antigüedad del votante (Idea 5).
+     * Vecino nuevo ≈ 0.5 · vecino consolidado 1.0 · Guardián 1.5 · Centinela 2.0.
+     */
+    public function weightFor(?User $user): float
+    {
+        if (! $user) {
+            return 1.0;
+        }
+
+        $weight = 1.0;
+        foreach (config('safemap.vote_weights', []) as $tier) {
+            if ((int) $user->reputation_points >= (int) ($tier['min'] ?? 0)) {
+                $weight = (float) $tier['weight'];
+            }
+        }
+
+        // Una cuenta recién creada nunca pesa más que un vecino nuevo.
+        $newDays = (int) config('safemap.new_account_days', 14);
+        if ($newDays > 0 && $user->created_at && $user->created_at->gt(now()->subDays($newDays))) {
+            $weight = min($weight, 0.5);
+        }
+
+        return $weight;
+    }
+
+    /** Confianza del autor del reporte (para la UI y el ajuste del umbral). */
+    public function trustFor(?User $user): array
+    {
+        $weight = $this->weightFor($user);
+
+        $label = match (true) {
+            $weight >= 2.0 => 'Centinela',
+            $weight >= 1.5 => 'Guardián',
+            $weight >= 1.0 => 'Vecino verificado',
+            default        => 'Vecino nuevo',
+        };
+
+        return ['weight' => round($weight, 2), 'label' => $label];
+    }
+
+    /**
+     * Confirmaciones (suma de pesos) que necesita el reporte para verificarse.
+     * Un autor de baja confianza requiere más respaldo; uno veterano, algo menos.
+     */
+    public function requiredConfirmationsFor(Incident $incident): float
+    {
+        $base = (float) config('safemap.confirmations_required');
+
+        if (! config('safemap.author_trust_adjust')) {
+            return $base;
+        }
+
+        $authorWeight = $this->weightFor($incident->user);
+        $adjust = $authorWeight < 1.0 ? 1 : ($authorWeight >= 1.5 ? -1 : 0);
+
+        return max(1.0, $base + $adjust);
+    }
+
     /** Resumen para el panel de reputación. Marca como "avisadas" las insignias nuevas. */
     public function summary(User $user): array
     {

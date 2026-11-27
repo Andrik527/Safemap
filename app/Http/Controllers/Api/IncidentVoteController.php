@@ -20,10 +20,14 @@ class IncidentVoteController extends Controller
      * Body: vote (still_there|gone), lat, lng  → posición actual del usuario.
      *
      * Reglas:
-     *  - Se necesitan N confirmaciones de usuarios distintos (config: confirmations_required)
-     *    para que el reporte quede "verificado" y viva más tiempo.
-     *  - Si no las consigue en su ventana de tiempo, se oculta solo (expires_at).
-     *  - Si los "Ya no existe" alcanzan el mínimo y superan a los "Sigue aquí", se marca resuelto.
+     *  - Cada voto tiene un PESO según la reputación del votante (Idea 5): un vecino
+     *    nuevo pesa menos que un usuario veterano. El umbral se compara contra la suma
+     *    de pesos, no contra el número de votos.
+     *  - El umbral exigido se ajusta según la confianza del AUTOR (reporte de un
+     *    usuario nuevo necesita más respaldo).
+     *  - Si no consigue las confirmaciones en su ventana de tiempo, se oculta (expires_at).
+     *  - Si los "Ya no existe" (ponderados) alcanzan el mínimo y superan a los "Sigue aquí",
+     *    se marca resuelto.
      *  - El autor puede cerrar su propio reporte, pero no confirmarlo.
      */
     public function store(VoteIncidentRequest $request, Incident $incident, ReputationService $reputation): JsonResponse
@@ -64,24 +68,39 @@ class IncidentVoteController extends Controller
             ], 403);
         }
 
-        $required       = (int) config('safemap.confirmations_required');
-        $threshold      = (int) config('safemap.resolve_votes_threshold');
-        $verifiedTtl    = (int) config('safemap.verified_ttl_minutes');
+        // Peso del voto (Idea 5) y umbral ajustado por la confianza del autor.
+        $weight      = $reputation->weightFor($user);
+        $required    = $reputation->requiredConfirmationsFor($incident);
+        $threshold   = (float) config('safemap.resolve_votes_threshold');
+        $verifiedTtl = (int) config('safemap.verified_ttl_minutes');
         $becameVerified = false;
         $rejected       = false;
+        $conflict       = false;
 
         try {
             DB::transaction(function () use (
-                $incident, $user, $vote, $lat, $lng, $distance, $isAuthor,
-                $required, $threshold, $verifiedTtl, &$becameVerified, &$rejected
+                $incident, $user, $vote, $lat, $lng, $distance, $weight, $isAuthor,
+                $required, $threshold, $verifiedTtl, &$becameVerified, &$rejected, &$conflict
             ) {
                 // Relee y bloquea la fila: dos confirmaciones simultáneas no se pisan
                 $fresh = Incident::whereKey($incident->id)->lockForUpdate()->first();
+
+                // Pudo cerrarse/se vencerse entre la validación previa y el bloqueo
+                $active = $fresh->status === IncidentStatus::Active
+                    && ($fresh->expires_at === null || $fresh->expires_at->isFuture());
+
+                if (! $active) {
+                    $conflict = true;
+
+                    return;
+                }
+
                 $incident->forceFill($fresh->getAttributes())->syncOriginal();
 
                 $incident->votes()->create([
                     'user_id'    => $user->id,
                     'vote'       => $vote->value,
+                    'weight'     => $weight,
                     'lat'        => $lat,
                     'lng'        => $lng,
                     'distance_m' => $distance,
@@ -89,8 +108,9 @@ class IncidentVoteController extends Controller
 
                 if ($vote === VoteType::StillThere) {
                     $incident->increment('confirmations_count', 1, ['last_confirmed_at' => now()]);
+                    $incident->increment('weighted_confirmations', $weight);
 
-                    if (! $incident->verified_at && $incident->confirmations_count >= $required) {
+                    if (! $incident->verified_at && $incident->weighted_confirmations >= $required) {
                         $incident->verified_at = now();
                         $becameVerified = true;
                     }
@@ -106,9 +126,10 @@ class IncidentVoteController extends Controller
 
                 // Voto "Ya no existe"
                 $incident->increment('resolve_votes_count');
+                $incident->increment('weighted_resolve_votes', $weight);
 
-                $communityClosed = $incident->resolve_votes_count >= $threshold
-                                && $incident->resolve_votes_count > $incident->confirmations_count;
+                $communityClosed = $incident->weighted_resolve_votes >= $threshold
+                                && $incident->weighted_resolve_votes > $incident->weighted_confirmations;
 
                 if ($isAuthor || $communityClosed) {
                     $incident->update([
@@ -124,6 +145,10 @@ class IncidentVoteController extends Controller
             return response()->json(['message' => 'Ya votaste en este reporte.'], 409);
         }
 
+        if ($conflict) {
+            return response()->json(['message' => 'Este reporte ya no está activo.'], 409);
+        }
+
         // Reputación (fuera de la transacción: cada movimiento es idempotente)
         if ($becameVerified) {
             $reputation->onReportVerified($incident);
@@ -133,7 +158,7 @@ class IncidentVoteController extends Controller
         }
         $reputation->onVoteCast($user, $incident);
 
-        $incident->load(['votes' => fn ($q) => $q->where('user_id', $user->id)]);
+        $incident->load(['user', 'votes' => fn ($q) => $q->where('user_id', $user->id)]);
         $resolved = $incident->status === IncidentStatus::Resolved;
 
         $message = match (true) {

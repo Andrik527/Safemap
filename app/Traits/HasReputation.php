@@ -1,15 +1,15 @@
 <?php
 
-namespace App\Models\Concerns;
+namespace App\Traits;
 
 use App\Models\ReputationEvent;
 use App\Models\UserBadge;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
- * Agrega esta línea a tu modelo App\Models\User:
+ * Relaciones de gamificación del usuario. Ya está aplicado en App\Models\User:
  *
- *     use App\Models\Concerns\HasReputation;
+ *     use App\Traits\HasReputation;
  *     class User extends Authenticatable { use HasReputation; ... }
  */
 trait HasReputation
