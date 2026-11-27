@@ -47,7 +47,7 @@
       <p class="rep-next">${nextText}</p>
 
       <div class="rep-stats">
-        <span title="Reportes seguidos confirmados">🔥 Racha <strong>${d.streak}</strong></span>
+        <span aria-label="Racha de reportes seguidos confirmados">🔥 Racha <strong>${d.streak}</strong></span>
         <span title="Reportes verificados">✔ <strong>${d.verified}</strong></span>
         <span title="Reportes rechazados">✕ <strong>${d.rejected}</strong></span>
       </div>
@@ -81,6 +81,11 @@
   function setOpen(open) {
     panel.hidden = !open;
     chip.setAttribute('aria-expanded', String(open));
+    if (open) {
+      document.querySelectorAll('.geo-alert, .toast-notification').forEach(el => el.remove());
+      const mapToast = document.getElementById('mapToast');
+      if (mapToast) mapToast.hidden = true;
+    }
   }
 
   chip.addEventListener('click', e => {

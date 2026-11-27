@@ -219,9 +219,18 @@
   background: #1A2E40;
 }
 
+[data-theme="dark"] .sr-name { color: #E8EDF2; }
+[data-theme="dark"] .sr-sub,
+[data-theme="dark"] .map-search-empty { color: #8EA9BD; }
+
 /* ── Mapa Leaflet — tile oscuro al vuelo ── */
 [data-theme="dark"] .leaflet-tile-pane {
   filter: invert(1) hue-rotate(180deg) brightness(0.82) saturate(0.65) contrast(1.05);
+}
+
+/* CARTO ya entrega teselas oscuras; evita aplicarles el filtro de inversión. */
+[data-theme="dark"][data-map-tiles="carto-dark"] .leaflet-tile-pane {
+  filter: none;
 }
 
 /* ── Zoom controls ── */
@@ -266,7 +275,7 @@
   border-radius: 14px;
   padding: 0.8rem 1rem;
   max-width: min(92vw, 420px);
-  width: 100%;
+  width: calc(100% - 24px);
   box-shadow: 0 8px 32px rgba(0,0,0,.35);
   animation: geo-slide-in 0.35s cubic-bezier(0.34,1.56,0.64,1) both;
 }
@@ -289,6 +298,9 @@
   font-weight: 600;
   color: #E8EDF2;
   line-height: 1.4;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .geo-alert-view {
@@ -336,6 +348,51 @@
     border-radius: 12px;
     padding: 0.7rem 0.85rem;
   }
+}
+
+/* Dropdown de insignias: por encima de alertas y con texto adaptable. */
+.topbar:has(#repChip[aria-expanded="true"]) {
+  z-index: 1500;
+}
+
+.rep-panel {
+  position: fixed;
+  top: calc(var(--topbar-h) + 8px);
+  right: 12px;
+  z-index: 1600;
+  width: min(360px, calc(100vw - 24px));
+  max-height: min(76vh, 620px);
+  overflow: auto;
+  overscroll-behavior: contain;
+  padding: 1rem;
+  color: var(--ink);
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: 0 12px 36px rgba(0,0,0,.35);
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.rep-panel[hidden] { display: none !important; }
+.rep-head, .rep-stats { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; justify-content: space-between; }
+.rep-next, .rep-hint, .rep-badge-text strong, .rep-badge-text small { overflow-wrap: anywhere; word-break: break-word; }
+.rep-next, .rep-hint { color: var(--muted); font-size: .78rem; line-height: 1.45; margin: .6rem 0; }
+.rep-progress { height: 7px; overflow: hidden; border-radius: 99px; background: var(--surface-3); margin: .65rem 0; }
+.rep-progress-bar { height: 100%; border-radius: inherit; background: #3BB6D8; }
+.rep-stats { justify-content: flex-start; font-size: .75rem; padding: .35rem 0; }
+.rep-title { margin: .65rem 0 .4rem; font-size: .85rem; }
+.rep-badges { display: grid; gap: .45rem; list-style: none; }
+.rep-badge { display: flex; align-items: flex-start; gap: .55rem; min-width: 0; padding: .55rem; border-radius: 9px; background: var(--surface); }
+.rep-badge-icon { flex: 0 0 1.5rem; }
+.rep-badge-text { display: grid; gap: .15rem; min-width: 0; }
+.rep-badge-text strong { font-size: .78rem; }
+.rep-badge-text small { color: var(--muted); font-size: .7rem; line-height: 1.4; }
+
+[data-theme="dark"] .rep-panel { background: #111E2B; border-color: #1E3345; }
+
+@media (max-width: 640px) {
+  .rep-panel { right: 8px; top: calc(var(--topbar-h) + 6px); }
 }
 
 @media (prefers-reduced-motion: reduce) {

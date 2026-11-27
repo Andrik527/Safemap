@@ -1,0 +1,350 @@
+/* ================================================================
+   SafeMap — map-features.css
+   Estilos de las nuevas capas e interfaces:
+     · Enrutamiento dual (Rápida / Segura)  · Idea 1
+     · Mapa de calor y zonas de riesgo       · Ideas 3 y 6
+     · Lugares vigilados (geocercas)         · Ideas 4 y 5
+   Empareja con public/js/map-{routing,heatmap,risk,geofence}.js
+   ================================================================ */
+
+/* ── Botón de capa activo (panel de controles) ── */
+.map-ctrl-btn.is-active {
+  background: var(--navy);
+  border-color: var(--navy);
+  color: #fff;
+}
+.map-ctrl-btn.is-active:hover { background: #16303f; }
+
+
+/* ================================================================
+   1. LEYENDAS FLOTANTES (bottom-left)
+   ================================================================ */
+.map-legend {
+  position: absolute;
+  bottom: 1.25rem;
+  left: 1rem;
+  z-index: 600;
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 0.6rem 0.75rem;
+  box-shadow: var(--shadow-card);
+  font-family: var(--font-ui);
+  max-width: 210px;
+  backdrop-filter: blur(4px);
+}
+
+.map-legend[hidden] { display: none; }
+
+.legend-title {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 0.1rem;
+}
+
+.legend-sub {
+  display: block;
+  font-size: 0.68rem;
+  color: var(--muted);
+  margin-bottom: 0.45rem;
+}
+
+.legend-bar {
+  height: 8px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #3BB6D8, #3BB273, #F2C15A, #F2A65A, #E84855, #8B1A25);
+}
+
+.legend-scale {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.6rem;
+  color: var(--muted);
+  margin-top: 0.15rem;
+}
+
+.legend-rows {
+  display: flex;
+  gap: 0.6rem;
+  font-size: 0.66rem;
+  color: var(--ink);
+}
+.legend-rows span { display: inline-flex; align-items: center; gap: 0.3rem; }
+.legend-rows i { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+
+
+/* ================================================================
+   2. PANEL DE ENRUTAMIENTO (Rápida / Segura)
+   ================================================================ */
+.routing-panel {
+  position: absolute;
+  top: 64px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(420px, calc(100% - 32px));
+  z-index: 1000;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: 0 10px 32px rgba(27, 58, 75, 0.22);
+  padding: 0.75rem;
+  font-family: var(--font-ui);
+}
+
+.routing-panel[hidden] { display: none; }
+
+.routing-panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.55rem;
+}
+
+.routing-title {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.routing-note { overflow-wrap: anywhere; word-break: break-word; }
+
+.routing-close {
+  border: none;
+  background: var(--surface-2, #EDEAE4);
+  color: var(--muted);
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  cursor: pointer;
+  flex-shrink: 0;
+  font-size: 0.7rem;
+}
+.routing-close:hover { background: var(--surface-3, #E2DED7); }
+
+.route-opt {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  width: 100%;
+  text-align: left;
+  padding: 0.6rem 0.7rem;
+  background: var(--surface, #F7F5F1);
+  border: 2px solid transparent;
+  border-radius: 12px;
+  cursor: pointer;
+  margin-bottom: 0.45rem;
+  transition: border-color 0.15s, background 0.15s;
+}
+.route-opt:last-child { margin-bottom: 0; }
+.route-opt:hover { background: var(--surface-2, #EDEAE4); }
+.route-opt.is-active { border-color: #2563a8; background: rgba(37, 99, 168, 0.08); }
+
+.route-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.06);
+}
+
+.route-info { display: flex; flex-direction: column; min-width: 0; }
+.route-info strong { font-size: 0.82rem; color: var(--ink); }
+.route-info small { font-size: 0.7rem; color: var(--muted); }
+
+.routing-note {
+  margin: 0.3rem 0 0;
+  font-size: 0.72rem;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+/* Pin de destino de la ruta */
+.route-end.pin-end {
+  width: 22px;
+  height: 22px;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  background: #E84855;
+  border: 2.5px solid #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+}
+
+/* Líneas de estado dentro de los popups (compartidas con map-ux.js) */
+.popup-pending { margin-top: 0.4rem; font-size: 0.72rem; font-weight: 600; color: #b9803a; }
+.popup-verified { margin-top: 0.4rem; font-size: 0.72rem; font-weight: 600; color: #4a7a51; }
+
+
+/* ================================================================
+   3. PANEL DE LUGARES VIGILADOS (geocercas)
+   ================================================================ */
+.geo-panel {
+  position: absolute;
+  top: 64px;
+  right: 1rem;
+  width: min(300px, calc(100% - 32px));
+  z-index: 1000;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: 0 10px 32px rgba(27, 58, 75, 0.22);
+  padding: 0.85rem;
+  font-family: var(--font-ui);
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.geo-panel[hidden] { display: none; }
+
+.geo-panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 0.65rem;
+}
+
+.geo-panel-close {
+  border: none;
+  background: var(--surface-2, #EDEAE4);
+  color: var(--muted);
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 0.7rem;
+}
+
+.geo-add { display: flex; flex-direction: column; gap: 0.4rem; margin-bottom: 0.7rem; }
+
+.geo-add input {
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  color: var(--ink);
+  background: var(--surface, #F7F5F1);
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  padding: 0.55rem 0.7rem;
+  outline: none;
+  width: 100%;
+}
+.geo-add input:focus { border-color: var(--navy); }
+
+.geo-add-btn {
+  font-family: var(--font-ui);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #fff;
+  background: var(--navy);
+  border: none;
+  border-radius: 10px;
+  padding: 0.55rem;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.geo-add-btn:hover { background: #16303f; }
+
+.geo-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.4rem; }
+
+.geo-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.6rem;
+  background: var(--surface, #F7F5F1);
+  border-radius: 10px;
+}
+.geo-item-body { display: flex; flex-direction: column; min-width: 0; flex: 1; }
+.geo-item-body strong { font-size: 0.8rem; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.geo-item-body small { font-size: 0.68rem; color: var(--muted); }
+
+.geo-item-del {
+  border: none;
+  background: rgba(232, 72, 85, 0.12);
+  color: #b53540;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  cursor: pointer;
+  flex-shrink: 0;
+  font-size: 0.62rem;
+}
+.geo-item-del:hover { background: rgba(232, 72, 85, 0.22); }
+
+.geo-empty { font-size: 0.74rem; color: var(--muted); line-height: 1.5; }
+
+.geo-pin {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #fff;
+  border: 2px solid #2563a8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+}
+
+
+/* ================================================================
+   4. TEMA OSCURO
+   ================================================================ */
+[data-theme="dark"] .map-legend {
+  background: rgba(17, 30, 43, 0.96);
+  border-color: #1E3345;
+}
+[data-theme="dark"] .legend-title { color: #E8EDF2; }
+[data-theme="dark"] .legend-sub,
+[data-theme="dark"] .legend-scale { color: #8EA9BD; }
+[data-theme="dark"] .legend-rows { color: #E8EDF2; }
+
+[data-theme="dark"] .routing-panel,
+[data-theme="dark"] .geo-panel {
+  background: #111E2B;
+  border-color: #1E3345;
+}
+[data-theme="dark"] .routing-title,
+[data-theme="dark"] .geo-panel-head,
+[data-theme="dark"] .route-info strong,
+[data-theme="dark"] .geo-item-body strong { color: #E8EDF2; }
+[data-theme="dark"] .route-info small,
+[data-theme="dark"] .routing-note,
+[data-theme="dark"] .geo-item-body small,
+[data-theme="dark"] .geo-empty { color: #8EA9BD; }
+
+[data-theme="dark"] .route-opt,
+[data-theme="dark"] .geo-item,
+[data-theme="dark"] .geo-add input {
+  background: #1A2E40;
+  color: #E8EDF2;
+}
+[data-theme="dark"] .route-opt:hover { background: #1E3850; }
+[data-theme="dark"] .route-opt.is-active { background: rgba(37, 99, 168, 0.22); }
+[data-theme="dark"] .geo-add input { border-color: #1E3345; }
+[data-theme="dark"] .geo-panel-close,
+[data-theme="dark"] .routing-close { background: #1A2E40; color: #8EA9BD; }
+
+[data-theme="dark"] .geo-pin { background: #111E2B; }
+
+
+/* ================================================================
+   5. RESPONSIVE
+   ================================================================ */
+@media (max-width: 640px) {
+  .routing-panel { top: 60px; width: calc(100% - 20px); }
+  .geo-panel { top: 108px; right: 10px; left: 10px; width: auto; }
+  .map-legend { max-width: 160px; padding: 0.5rem 0.6rem; }
+  .legend-title { font-size: 0.72rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .map-legend, .routing-panel, .geo-panel, .route-opt { transition: none; }
+}

@@ -9,12 +9,16 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.min.css"/>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.Default.min.css"/>
-<link rel="stylesheet" href="{{ secure_asset('css/map.css') }}">
-<link rel="stylesheet" href="{{ secure_asset('css/mobile-ux.css') }}">
+<link rel="stylesheet" href="{{ secure_asset('css/map.css') }}?v={{ md5_file(public_path('css/map.css')) }}">
+<link rel="stylesheet" href="{{ secure_asset('css/mobile-ux.css') }}?v={{ md5_file(public_path('css/mobile-ux.css')) }}">
+{{-- Modo oscuro real (filtro de inversión de teselas) — se activa con [data-theme="dark"] --}}
+<link rel="stylesheet" href="{{ secure_asset('css/dark-mode.css') }}?v={{ md5_file(public_path('css/dark-mode.css')) }}">
+{{-- Capas nuevas: enrutamiento, mapa de calor, zonas de riesgo y geocercas --}}
+<link rel="stylesheet" href="{{ secure_asset('css/map-features.css') }}?v={{ md5_file(public_path('css/map-features.css')) }}">
 <meta name="csrf-token" content="{{ csrf_token() }}">
 <meta name="theme-color" content="#1B3A4B">
 {{-- El tema se aplica en el <head> (antes de pintar) para evitar un destello blanco de noche --}}
-<script src="{{ secure_asset('js/map-theme.js') }}"></script>
+<script src="{{ secure_asset('js/map-theme.js') }}?v={{ md5_file(public_path('js/map-theme.js')) }}"></script>
 @endsection
 
 @section('content')
@@ -67,19 +71,25 @@
       <span class="sidebar-title">Reportes activos</span>
       <div class="active-count" id="activeCount">0</div>
     </div>
-    <div class="filter-bar">
-      <button class="filter-chip filter-chip--active" data-filter="all">Todos</button>
-      <button class="filter-chip" data-filter="fire">
+    <div class="filter-bar" role="group" aria-label="Filtrar reportes por tipo">
+      <button class="filter-chip filter-chip--active" data-filter="all" aria-pressed="true">Todos</button>
+      <button class="filter-chip" data-filter="fire" aria-pressed="false">
         <span class="chip-dot" style="background:#E84855"></span>Incendio
       </button>
-      <button class="filter-chip" data-filter="landslide">
+      <button class="filter-chip" data-filter="landslide" aria-pressed="false">
         <span class="chip-dot" style="background:#F2A65A"></span>Deslave
       </button>
-      <button class="filter-chip" data-filter="flood">
+      <button class="filter-chip" data-filter="flood" aria-pressed="false">
         <span class="chip-dot" style="background:#3BB6D8"></span>Inundación
       </button>
-      <button class="filter-chip" data-filter="accident">
+      <button class="filter-chip" data-filter="pothole" aria-pressed="false">
+        <span class="chip-dot" style="background:#9C88FF"></span>Bache
+      </button>
+      <button class="filter-chip" data-filter="accident" aria-pressed="false">
         <span class="chip-dot" style="background:#6B8F71"></span>Accidente
+      </button>
+      <button class="filter-chip" data-filter="other" aria-pressed="false">
+        <span class="chip-dot" style="background:#697A84"></span>Otro
       </button>
     </div>
     <div class="report-list" id="reportList">
@@ -134,12 +144,16 @@
           <path d="M12 2v3M12 19v3M2 12h3M19 12h3"/>
         </svg>
       </button>
+      {{-- Capas de analítica y geocercas --}}
+      <button class="map-ctrl-btn" id="layerHeat" title="Mapa de calor de siniestralidad" aria-pressed="false">🔥</button>
+      <button class="map-ctrl-btn" id="layerRisk" title="Zonas predictivas de anegamiento" aria-pressed="false">💧</button>
+      <button class="map-ctrl-btn" id="layerPlaces" title="Mis lugares vigilados (geocercas)" aria-pressed="false">🏠</button>
+      @if (app()->environment(['local', 'testing']))
+        {{-- Simulador de GPS solo en desarrollo y pruebas --}}
+        <button class="map-ctrl-btn" id="btn-simulate-gps" title="Simular GPS (dev)">📍</button>
+      @endif
     </div>
     <div class="map-toast" id="mapToast" hidden><span id="toastMsg"></span></div>
-    <!-- Botón Simulador GPS (Solo para desarrollo) -->
-    <button id="btn-simulate-gps" style="position: absolute; bottom: 85px; left: 15px; z-index: 1000; padding: 10px 15px; background: #E84855; color: white; border: none; border-radius: 8px; font-weight: bold; box-shadow: 0 4px 10px rgba(0,0,0,0.3); cursor: pointer;">
-      📍 Simular GPS
-    </button>
   </main>
 </div>
 
@@ -158,7 +172,28 @@
     isGuest: @json(!auth()->check()),
     loginUrl: @json(route('login', [], false)),
     voteRadius: @json((int) config('safemap.vote_radius_m')),
-    api: { incidents: '/api/incidents' }
+    api: { incidents: '/api/incidents' },
+    // Analítica histórica y predictiva (Ideas 3 y 6)
+    analytics: {
+      heatmap: '/api/analytics/heatmap',
+      risk:    '/api/analytics/risk-zones'
+    },
+    // Enrutamiento Waze-style (Idea 1) — OSRM público, gratuito
+    routing: {
+      osrm:         @json(config('safemap.routing.osrm_url')),
+      alternatives: @json((int) config('safemap.routing.alternatives')),
+      riskRadius:   @json((int) config('safemap.routing.risk_radius_m')),
+      riskWeights:  @json(config('safemap.routing.risk_weights'))
+    },
+    mapTiles: {
+      cartoApiKey: @json(config('safemap.carto_api_key'))
+    },
+    // Geocercas y alertas vecinales (Ideas 4 y 5)
+    geofence: {
+      radius:     @json((int) config('safemap.geofence.default_radius_m')),
+      highImpact: @json(config('safemap.geofence.high_impact_types')),
+      cooldown:   @json((int) config('safemap.geofence.alert_cooldown_s'))
+    }
   };
 </script>
 {{-- 1. Leaflet y plugins --}}
@@ -167,13 +202,21 @@
 {{-- 2. map-ux.js ANTES de map.js (map.js consulta window.SafeMapUX al iniciar) --}}
 <script src="{{ secure_asset('js/map-ux.js') }}"></script>
 {{-- 3. Lógica principal --}}
-<script src="{{ secure_asset('js/map.js') }}"></script>
+<script src="{{ secure_asset('js/map.js') }}?v={{ md5_file(public_path('js/map.js')) }}"></script>
 {{-- 4. Buscador de destinos (usa window.SafeMap de map.js) --}}
-<script src="{{ secure_asset('js/map-search.js') }}"></script>
-{{-- 5. Alertas de proximidad (geofencing) --}}
-<script src="{{ secure_asset('js/map-geofence.js') }}"></script>
-{{-- 6. Reputación y gamificación (solo con sesión) --}}
+<script src="{{ secure_asset('js/map-search.js') }}?v={{ md5_file(public_path('js/map-search.js')) }}"></script>
+{{-- 5. Enrutamiento dual Rápida / Segura (Idea 1) --}}
+<script src="{{ secure_asset('js/map-routing.js') }}?v={{ md5_file(public_path('js/map-routing.js')) }}"></script>
+{{-- 6. Mapa de calor de siniestralidad (Idea 6) --}}
+<script src="{{ secure_asset('js/map-heatmap.js') }}"></script>
+{{-- 7. Zonas predictivas de anegamiento por temporada (Idea 3) --}}
+<script src="{{ secure_asset('js/map-risk.js') }}"></script>
+{{-- 8. Geocercas y alertas vecinales por proximidad (Ideas 4 y 5) --}}
+<script src="{{ secure_asset('js/map-geofence.js') }}?v={{ md5_file(public_path('js/map-geofence.js')) }}"></script>
+{{-- 9. Reputación y gamificación (solo con sesión) --}}
+    <!-- Cargamos los scripts funcionales del mapa -->
+
 @auth
-<script src="{{ secure_asset('js/map-reputation.js') }}"></script>
+<script src="{{ secure_asset('js/map-reputation.js') }}?v={{ md5_file(public_path('js/map-reputation.js')) }}"></script>
 @endauth
 @endsection
