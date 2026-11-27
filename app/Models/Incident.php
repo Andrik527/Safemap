@@ -20,14 +20,16 @@ class Incident extends Model
     protected function casts(): array
     {
         return [
-            'type'              => IncidentType::class,
-            'status'            => IncidentStatus::class,
-            'lat'               => 'float',
-            'lng'               => 'float',
-            'resolved_at'       => 'datetime',
+            'type' => IncidentType::class,
+            'status' => IncidentStatus::class,
+            'lat' => 'float',
+            'lng' => 'float',
+            'weighted_confirmations' => 'float',
+            'weighted_resolve_votes' => 'float',
+            'resolved_at' => 'datetime',
             'last_confirmed_at' => 'datetime',
-            'verified_at'       => 'datetime',
-            'expires_at'        => 'datetime',
+            'verified_at' => 'datetime',
+            'expires_at' => 'datetime',
         ];
     }
 
@@ -41,18 +43,16 @@ class Incident extends Model
         return $this->hasMany(IncidentVote::class);
     }
 
-    /** Visible en el mapa: activo y todavía vigente (expires_at null = reporte antiguo). */
     public function scopeActive(Builder $query): Builder
     {
         return $query->where('status', IncidentStatus::Active->value)
-                     ->where(fn (Builder $q) => $q->whereNull('expires_at')->orWhere('expires_at', '>', now()));
+            ->where(fn (Builder $q) => $q->whereNull('expires_at')->orWhere('expires_at', '>', now()));
     }
 
-    /** Filtra por caja geográfica: [minLng, minLat, maxLng, maxLat] */
     public function scopeWithinBounds(Builder $query, float $minLng, float $minLat, float $maxLng, float $maxLat): Builder
     {
         return $query->whereBetween('lat', [$minLat, $maxLat])
-                     ->whereBetween('lng', [$minLng, $maxLng]);
+            ->whereBetween('lng', [$minLng, $maxLng]);
     }
 
     public function isVerified(): bool
@@ -60,7 +60,11 @@ class Incident extends Model
         return $this->verified_at !== null;
     }
 
-    /** Distancia en metros (fórmula de Haversine) entre este incidente y un punto. */
+    public function isHighImpact(): bool
+    {
+        return in_array($this->type->value, config('safemap.geofence.high_impact_types', []), true);
+    }
+
     public function distanceTo(float $lat, float $lng): float
     {
         $earthRadius = 6371000;
@@ -68,7 +72,7 @@ class Incident extends Model
         $dLng = deg2rad($lng - $this->lng);
 
         $a = sin($dLat / 2) ** 2
-           + cos(deg2rad($this->lat)) * cos(deg2rad($lat)) * sin($dLng / 2) ** 2;
+            + cos(deg2rad($this->lat)) * cos(deg2rad($lat)) * sin($dLng / 2) ** 2;
 
         return 2 * $earthRadius * asin(min(1, sqrt($a)));
     }
