@@ -8,14 +8,15 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class IncidentVote extends Model
 {
-    protected $fillable = ['incident_id', 'user_id', 'vote', 'lat', 'lng', 'distance_m'];
+    protected $fillable = ['incident_id', 'user_id', 'vote', 'weight', 'lat', 'lng', 'distance_m'];
 
     protected function casts(): array
     {
         return [
             'vote' => VoteType::class,
-            'lat'  => 'float',
-            'lng'  => 'float',
+            'weight' => 'float',
+            'lat' => 'float',
+            'lng' => 'float',
         ];
     }
 
