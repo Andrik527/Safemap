@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Services\ReputationService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Storage;
@@ -11,7 +12,13 @@ class IncidentResource extends JsonResource
 {
     public function toArray(Request $request): array
     {
-        $required = (int) config('safemap.confirmations_required');
+        $reputation = app(ReputationService::class);
+
+        // Umbral de confirmaciones ajustado por la confianza del autor (Idea 5).
+        $required            = $reputation->requiredConfirmationsFor($this->resource);
+        $weightedConfirms    = (float) $this->weighted_confirmations;
+        $trust               = $reputation->trustFor($this->user);   // relación precargada
+
         $disk     = config('safemap.photo_disk');
 
         $photoUrl = null;
@@ -40,10 +47,16 @@ class IncidentResource extends JsonResource
             'confirmations' => $this->confirmations_count,
             'resolve_votes' => $this->resolve_votes_count,
             'verified'      => $this->verified_at !== null,
-            'confirmations_needed' => $this->verified_at ? 0 : max(0, $required - $this->confirmations_count),
+            'confirmations_needed' => $this->verified_at ? 0 : max(0, (int) ceil($required - $weightedConfirms)),
             'expires_at'    => $this->expires_at?->toIso8601String(),
             'my_vote'       => $this->relationLoaded('votes') ? $this->votes->first()?->vote->value : null,
             'mine'          => auth()->check() && auth()->id() === $this->user_id,
+
+            // Verificación cruzada por reputación (Idea 5) y clasificación (Ideas 6-7)
+            'weighted_confirmations' => round($weightedConfirms, 2),
+            'weighted_resolve_votes' => round((float) $this->weighted_resolve_votes, 2),
+            'reporter_trust'         => ['weight' => $trust['weight'], 'label' => $trust['label']],
+            'high_impact'            => $this->resource->isHighImpact(),
             // No se expone user_id ni datos del autor
         ];
     }

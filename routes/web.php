@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\MapaController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\Api\AnalyticsController;
 use App\Http\Controllers\Api\IncidentController;
 use App\Http\Controllers\Api\IncidentVoteController;
 use App\Http\Controllers\Api\ReputationController;
@@ -35,6 +36,15 @@ Route::prefix('api')->group(function () {
     Route::get('/me/reputation', [ReputationController::class, 'show'])
         ->middleware('auth')
         ->name('me.reputation');
+
+    // Analítica pública: mapa de calor histórico y zonas predictivas de anegamiento
+    Route::get('/analytics/heatmap', [AnalyticsController::class, 'heatmap'])
+        ->middleware('throttle:60,1')
+        ->name('analytics.heatmap');
+
+    Route::get('/analytics/risk-zones', [AnalyticsController::class, 'riskZones'])
+        ->middleware('throttle:60,1')
+        ->name('analytics.risk-zones');
 
 
     Route::get('/instalar-bd', function () {
